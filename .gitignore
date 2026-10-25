@@ -1,5 +1,6 @@
 .env
 logs/
+.cursor/mcp.json
 __pycache__/
 *.pyc
 third_party/php-up-2026/
