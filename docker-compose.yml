@@ -42,8 +42,9 @@ services:
       start_period: 15s
 
   # Zer061-style: same mounts as third_party/zer061-php2shell/docker/docker-compose.yml
+  # PHP_APACHE_VERSION: 8.4.26 = vulnerable heap chain; 8.4.27 = fixed (validation matrix)
   target-apache:
-    image: php:8.4.26-apache
+    image: php:${PHP_APACHE_VERSION:-8.4.26}-apache
     platform: linux/amd64
     container_name: vtbw-php2shell-apache
     hostname: target-apache
@@ -73,7 +74,7 @@ services:
       start_period: 20s
 
   target-apache-2:
-    image: php:8.4.26-apache
+    image: php:${PHP_APACHE_VERSION:-8.4.26}-apache
     platform: linux/amd64
     container_name: vtbw-php2shell-apache-2
     hostname: target-apache-2

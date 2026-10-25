@@ -20,6 +20,14 @@ Kurzindex der übrigen Dateien:
 
 ---
 
+## 0. Validierung (Full-Stack-Matrix)
+
+`vtbw-php2shell-lab validate` führt die komplette nicht-interaktive Matrix aus: Baseline (`doctor`/`test`/`rce`/`patch-audit run all`/`workarounds auto`), FPM-Versionsmatrix (verwundbare Revs 8.1.34–8.5.11 und Fix-Releases 8.2.35–8.5.12 über `PHP_TARGET_VERSION`), Zer061 auf mod_php 8.4.26 und 8.4.27 (`PHP_APACHE_VERSION`), Jackalsyn-Slot, External-Modus (Sliver + Tunnel + Tor) und Singularity-Detection. Jeder Schritt landet in `out/validation/<UTC>/` (`session.log`, `matrix.jsonl`, `AUSWERTUNG.md`); bei Fehlern läuft die Matrix weiter und protokolliert `FAIL`/`SKIP`. Erwartungslogik: auf verwundbaren Revs muss `vendor-patch` fehlschlagen, auf Fix-Releases bestehen. Hinweis: `doctor`/`test` (0x4148-PoC) armieren auch auf gepatchten Versionen — sie messen nur die Erreichbarkeit des Upload-Progress-Pfads und sind kein Patch-Nachweis. Singularity `container-build` wird ohne `CONFIRM_SINGULARITY_CONTAINER=I_UNDERSTAND_REBOOT` bewusst übersprungen (kein Host-LKM).
+
+Referenzlauf: `out/validation/20261025T185500Z/AUSWERTUNG.md` (66 Schritte: 40 PASS, 7 erwartete FAILs, 17 DONE, 2 dokumentierte SKIPs, 0 unerwartete Fehler).
+
+---
+
 ## 1. Befehle (jedes Arbeitsverzeichnis)
 
 Die Launcher liegen in `bin/` und lösen Symlinks auf, damit das Lab-Root unabhängig vom aktuellen Ordner gefunden wird.
@@ -452,6 +460,7 @@ Skill: `.cursor/skills/php2shell-unchained/SKILL.md`. Rule: `.cursor/rules/php2s
 | Variable | Ort |
 |----------|-----|
 | `PHP_TARGET_VERSION` | Build-Arg des FPM-Targets, Default `8.4.4` |
+| `PHP_APACHE_VERSION` | Image-Tag der Apache-Targets (`target-apache`, `target-apache-2`), Default `8.4.26` (verwundbar); `8.4.27` für Fix-Validierung |
 | `DOCKER_HOST` | gesetzt durch `docker-env.sh`, wenn der Default-Socket nicht antwortet |
 | `SLIVER_VERSION` | `fetch-sliver.sh`, Default `latest` |
 | `SLIVER_ARCH` | aus `uname -m`: `amd64` oder `arm64` |

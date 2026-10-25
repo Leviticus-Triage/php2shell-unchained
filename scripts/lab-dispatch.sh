@@ -44,6 +44,8 @@ lab_dispatch() {
       exec "$LAB/scripts/lab-reverse-shell.sh" "$@" ;;
     export|archive)
       exec "$LAB/scripts/make-export-archive.sh" ;;
+    validate|validation|validation-matrix)
+      exec "$LAB/scripts/lab-validation-matrix.sh" ;;
     menu|unchained)
       exec "$LAB/scripts/php2shell-unchained-menu.sh" ;;
     down)

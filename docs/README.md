@@ -15,6 +15,14 @@
 | LKM module | [SINGULARITY-LAB.md](SINGULARITY-LAB.md) |
 | Policy | [../SECURITY.md](../SECURITY.md) |
 
+## Validation runbook
+
+```bash
+vtbw-php2shell-lab validate    # Full-Stack-Matrix (nicht-interaktiv, ~15–45 min)
+```
+
+Ergebnisse: `out/validation/<UTC>/` (`session.log`, `matrix.jsonl`, `AUSWERTUNG.md`). MCP-Parität der Server-Datei: `python3 mcp/mcp_parity_client.py <tool> '<json-args>'` (z. B. `lab_status`, `{}`). Nach Änderungen an `mcp/php2shell_lab_mcp.py` die laufende Cursor-MCP-Instanz neu laden (Settings → MCP → Reload), sonst arbeitet sie mit altem Code.
+
 ## External references (PHP2Shell)
 
 - [Calif Research — PHP2Shell](https://calif.io/php2shell/)

@@ -18,7 +18,7 @@ if not LAB.is_dir():
 WRAPPER = Path(
     os.environ.get(
         "VTBW_LAB_WRAPPER",
-        os.path.expanduser("~/Schreibtisch/cursor-projects/vtbw-php2shell-lab"),
+        str(LAB / "bin" / "vtbw-php2shell-lab"),
     )
 ).resolve()
 
@@ -29,6 +29,7 @@ ALLOWED_COMMANDS = frozenset(
     zer061 zer061-shell scan fingerprint exploit-list exploit-multi
     docs tools reverse-shell revshell export menu unchained help ps logs down
     patch-audit mitigation-audit external tor workarounds wa
+    validate validation validation-matrix
     """.split()
 )
 

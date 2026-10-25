@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 LAB="$(cd "$(dirname "$0")/.." && pwd)"
-WRAPPER="${VTBW_LAB_WRAPPER:-$HOME/Schreibtisch/cursor-projects/vtbw-php2shell-lab}"
+WRAPPER="${VTBW_LAB_WRAPPER:-$LAB/bin/vtbw-php2shell-lab}"
 cat <<EOF
 PHP2Shell - unchained | By Leviticus-Triage
 
@@ -59,6 +59,7 @@ Kit internals
   docs [list|open NAME]        Zer061 Analyse-Markdown
   tools [list|run SCRIPT]      tools/*.py Forschungs-Skripte
 
+  validate                   Full-Stack-Matrix (FPM-Versionen, Zer061, External, Auswertung)
   export                     Portable tar.gz
 
 Lab: $LAB
