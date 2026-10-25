@@ -28,6 +28,17 @@ Ohne Installation der Symlinks:
 bin/vtbw-php2shell-lab help
 ```
 
+## Workarounds prüfen — Start hier (1 Terminal)
+
+```bash
+vtbw-php2shell-lab workarounds run    # geführt: ändern → ENTER → Prüfung → Auswertung
+vtbw-php2shell-lab workarounds auto   # nur messen (Baseline)
+vtbw-php2shell-lab workarounds last   # Auswertung der letzten Sitzung
+```
+
+Alles wird mitgeloggt nach `out/workarounds/<UTC-Zeit>/` (`session.log`, `steps.jsonl`, `auswertung.md`).
+Anleitung mit Terminal-Angaben: **[docs/WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](docs/WORKAROUNDS-SCHRITT-FUER-SCHRITT.md)**
+
 `third_party/` und `out/` liegen nicht im Git. Bundles: `fetch-zer061`, `fetch-jackalsyn`, `fetch-sliver`, `fetch-singularity`, `fetch-reverse-shell`.
 
 Phasenablauf: [docs/HOWTO-DE.md](docs/HOWTO-DE.md)

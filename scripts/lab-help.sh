@@ -4,8 +4,16 @@ WRAPPER="${VTBW_LAB_WRAPPER:-$HOME/Schreibtisch/cursor-projects/vtbw-php2shell-l
 cat <<EOF
 PHP2Shell - unchained | By Leviticus-Triage
 
-  $WRAPPER menu              Interaktives ASCII-Menü (empfohlen)
+  START HIER — Workarounds prüfen (1 Terminal, mit Log + Auswertung):
+    $WRAPPER workarounds run     Schritt für Schritt: ändern → ENTER → Prüfung
+    $WRAPPER workarounds auto    Nur messen (Baseline, ohne Rückfragen)
+    $WRAPPER workarounds last    Auswertung der letzten Sitzung
+    Doku: docs/WORKAROUNDS-SCHRITT-FUER-SCHRITT.md
+
+  $WRAPPER menu              Interaktives ASCII-Menü
   Pfad: [1] FPM → [2] Zer061 oder [3] Jackalsyn → [6] Sliver C2 / [7] Singularity. Sec-Team [8].
+  Terminals: Workaround-Ablauf = nur Terminal 1. Terminal 2 nur bei shell,
+    sliver console, reverse-shell listen und logs <ziel> (blockieren das Fenster).
   logs target|apache|singularity|sliver|tunnel|tunnel-sliver|tor
 
 FPM / VTBW-Target (nginx + PHP-FPM)
@@ -38,7 +46,8 @@ External-Attacker (Tunnel web+sliver-http, optional Tor-Egress)
 Cloudflare Quick Tunnel (externe Angreifer-Perspektive, kein Account)
   tunnel up web|sliver-http [--tor] | tunnel url | tunnel status | tunnel down
 
-Patch-Audit (Hotfix/WAF Top-10 Bypass-Tests für Sec-Teams, nur eigene Ziele)
+Workarounds + Patch-Audit (Sec-Teams, nur eigene Ziele)
+  workarounds | workarounds run|auto|last|logs   Geführt, Log: out/workarounds/
   patch-audit list | patch-audit run <id>|all | patch-audit logs
   PATCH_AUDIT_URL=… PATCH_AUDIT_DESTRUCTIVE=1 …
 

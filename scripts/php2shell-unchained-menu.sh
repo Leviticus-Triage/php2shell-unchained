@@ -78,7 +78,9 @@ main_loop() {
     banner
     cat <<'MENU'
 
-    Pfad: [1] dann [2] oder [3], dann C2 [6] / LKM [7]. Sec-Team: [8].
+    Sec-Team zuerst: [8] → erster Eintrag (Workarounds, 1 Terminal, mit Log).
+    Pfad: [1] dann [2] oder [3], dann C2 [6] / LKM [7].
+    Terminal 2 brauchst du nur bei: shell, sliver console, reverse-shell listen, logs.
 
     [1] FPM-Lab (VTBW)     up · test · doctor · rce · shell · monitor
     [2] Zer061 mod_php     apache-up · fetch · zer061 · zer061-shell (Kit)
@@ -87,7 +89,7 @@ main_loop() {
     [5] Reverse Shell      lukechilds-Payload (nicht der Kit-Weg aus [2])
     [6] Sliver C2+External Post-Exploit · Implant · Tunnel (+Tor-Verschleierung)
     [7] Singularity        Post-Exploit LKM (VM / Host / Container)
-    [8] Patch-Audit        Hotfix/WAF Top-10 — noch bypassbar?
+    [8] Workarounds+Audit  SCHRITT-FÜR-SCHRITT · Patch/WAF prüfen · Log+Auswertung
     [9] Kit Docs & Tools   docs · tools
     [d] Docker             ps · logs · down · export
     [h] Hilfe (alle CLI-Befehle)
@@ -119,7 +121,7 @@ MENU
           "PoC UAF" test \
           "Doctor" doctor \
           "Chain-A id" rce \
-          "Interaktive Shell" shell \
+          "Interaktive Shell (belegt Terminal 1 → Terminal 2 öffnen)" shell \
           "Monitor" monitor
         ;;
       2)
@@ -148,7 +150,7 @@ MENU
         dispatch_sub "reverse-shell.sh (lukechilds; Kit-Shell ist [2])" \
           "Clone Repo" fetch-reverse-shell \
           "Payload → out/r" "reverse-shell|fetch" \
-          "Listener nc" "reverse-shell|listen" \
+          "Listener nc (Terminal 1, Auslöser in Terminal 2)" "reverse-shell|listen" \
           "Zer061 + rs payload" "reverse-shell|zer061"
         ;;
       6)
@@ -168,7 +170,7 @@ MENU
           "HTTPS Listener 8889 (Tunnel)" "sliver|http-listener" \
           "Implant erzeugen (mtls, lab-intern)" "sliver|implant" \
           "Implant staging" "sliver|stage" \
-          "Interaktive Konsole" "sliver|console" \
+          "Interaktive Konsole (belegt Terminal 1 → Terminal 2)" "sliver|console" \
           "Ops-Log" "sliver|ops" \
           "Tunnel einzeln: Web" "tunnel|up|web" \
           "Tunnel einzeln: Sliver HTTPS" "tunnel|up|sliver-http" \
@@ -192,8 +194,13 @@ MENU
           "Hilfe" "singularity|help"
         ;;
       8)
-        dispatch_sub "Patch-Audit (Sec-Team)" \
-          "Szenarien anzeigen" "patch-audit|list" \
+        dispatch_sub "Workarounds + Patch-Audit — START: Eintrag 1 (nur Terminal 1)" \
+          "▶ START: Workarounds Schritt-für-Schritt (Log+Auswertung)" "workarounds|run" \
+          "Workarounds nur messen (Baseline, auto)" "workarounds|auto" \
+          "Workarounds Übersicht (Reihenfolge/Terminal)" "workarounds" \
+          "Auswertung letzte Workaround-Sitzung" "workarounds|last" \
+          "Workaround-Sitzungen (Logs)" "workarounds|logs" \
+          "── Einzelprüfungen: Szenarien anzeigen ──" "patch-audit|list" \
           "Alle Checks (Lab)" "patch-audit|run|all" \
           "Vendor-Patch-Version" "patch-audit|run|vendor-patch" \
           "WAF-Signaturen" "patch-audit|run|waf-php2shell-signature" \

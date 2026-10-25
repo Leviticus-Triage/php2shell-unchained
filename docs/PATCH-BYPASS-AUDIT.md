@@ -49,7 +49,17 @@ Sec-Teams prüfen, ob Emergency-Patches und Workarounds **wirklich** greifen ode
 
 **Hinweis:** Vollständiger Fix = **Vendor-Patch**. Workarounds reduzieren Risiko; einige Kombinationen (618 ohne Progress-Feld, 115560) umgehen einzelne Controls.
 
-## CLI
+## Schritt für Schritt (geführt, mit Log)
+
+```bash
+vtbw-php2shell-lab workarounds run    # Terminal 1: ändern → ENTER → Prüfung → Auswertung
+vtbw-php2shell-lab workarounds auto   # nur messen
+vtbw-php2shell-lab workarounds last   # Auswertung ansehen
+```
+
+Vollständige Anleitung: [WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](WORKAROUNDS-SCHRITT-FUER-SCHRITT.md). Logs: `out/workarounds/<UTC-Zeit>/`.
+
+## CLI (Einzelprüfungen)
 
 ```bash
 vtbw-php2shell-lab patch-audit list

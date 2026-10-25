@@ -28,9 +28,11 @@ ALLOWED_COMMANDS = frozenset(
     fetch-zer061 fetch-jackalsyn fetch-singularity fetch-sliver fetch-reverse-shell
     zer061 zer061-shell scan fingerprint exploit-list exploit-multi
     docs tools reverse-shell revshell export menu unchained help ps logs down
-    patch-audit mitigation-audit external tor
+    patch-audit mitigation-audit external tor workarounds wa
     """.split()
 )
+
+WORKAROUNDS_SUB = frozenset({"guide", "help", "list", "run", "auto", "last", "logs"})
 
 SLIVER_SUB = frozenset(
     {
@@ -71,7 +73,8 @@ mcp = FastMCP(
         "PHP2Shell unchained. Menü: [1] FPM, [2] Zer061 oder [3] Jackalsyn, [4] Multi, "
         "[5] lukechilds-rs (Kit-Shell ist zer061-shell), [6] Sliver C2 + External "
         "(external up [--tor] = Tunnel web+sliver-http, Ursprungs-Verschleierung via Tor), "
-        "[7] Singularity, [8] patch-audit (inkl. WAF Top-10), [9] docs, [d] docker. "
+        "[7] Singularity, [8] workarounds (Schritt-fuer-Schritt, Log+Auswertung, nur Terminal 1) "
+        "+ patch-audit, [9] docs, [d] docker. "
         "logs: target|apache|singularity|sliver|tunnel|tunnel-sliver|tor. "
         "Nutze lab_help und lab_run. Keine Produktions-URLs. "
         f"Lab: {LAB}. Wrapper: {WRAPPER}."
@@ -133,6 +136,13 @@ def lab_run(command: str, subcommand: str = "", extra: str = "") -> str:
         if cmd == "jackalsyn":
             return _run_wrapper(["jackalsyn", sub or "status"], timeout=600)
         return _run_wrapper(["jackalsyn", cmd], timeout=600)
+    if cmd in ("workarounds", "wa") or cmd in WORKAROUNDS_SUB:
+        # subcommand: run|auto|last|logs|guide ; extra: einzelne Schritt-ID (optional)
+        sub_eff = sub if (cmd in ("workarounds", "wa") and sub) else (cmd if cmd in WORKAROUNDS_SUB else "guide")
+        argv = ["workarounds", sub_eff]
+        if extra_arg:
+            argv.append(extra_arg)
+        return _run_wrapper(argv, timeout=900)
     if cmd in ("patch-audit", "mitigation-audit"):
         if not sub or sub == "help":
             return _run_wrapper(["patch-audit", "help"], timeout=60)
@@ -210,6 +220,7 @@ def lab_read_doc(doc: str = "HOWTO-DE") -> str:
         "CURSOR": LAB / "docs" / "CURSOR-INTEGRATION.md",
         "SINGULARITY": LAB / "docs" / "SINGULARITY-LAB.md",
         "PATCH-AUDIT": LAB / "docs" / "PATCH-BYPASS-AUDIT.md",
+        "WORKAROUNDS": LAB / "docs" / "WORKAROUNDS-SCHRITT-FUER-SCHRITT.md",
     }
     path = mapping.get(doc.upper().replace(".MD", ""), mapping["HOWTO-DE"])
     if doc.endswith(".md"):
@@ -231,7 +242,7 @@ def lab_exploit_map() -> str:
         "4) test/doctor = UAF PoC nur, kein Shell-RCE\n"
         "5) sliver = C2 Post-Exploit (Menü [6]) + tunnel (externe Sicht)\n"
         "6) singularity = optional Post-Exploit LKM (Menü [7], nicht in PHP-Container)\n"
-        "7) patch-audit = Hotfix/WAF Top-10 (Menü [8]); extra=Szenario, logs=JSONL\n"
+        "7) workarounds run|auto = geführter Workaround-Ablauf [8] (Log: out/workarounds/); patch-audit = Einzelchecks\n"
         "8) reverse-shell = lukechilds [5]; zer061-shell = Kit-Weg [2]\n"
         "9) external up [--tor] = kompletter External-Modus [6]: Tunnel web+sliver-http,\n"
         "   Ursprung via Tor verschleiert; external patch-audit <id>; sliver implant-external\n"

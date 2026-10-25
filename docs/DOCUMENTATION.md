@@ -9,6 +9,7 @@ Kurzindex der übrigen Dateien:
 | Datei | Inhalt |
 |-------|--------|
 | [HOWTO-DE.md](HOWTO-DE.md) | Ablauf in Phasen 1–10 |
+| [WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](WORKAROUNDS-SCHRITT-FUER-SCHRITT.md) | Workarounds Schritt für Schritt (1 Terminal, Log + Auswertung) |
 | [PATCH-BYPASS-AUDIT.md](PATCH-BYPASS-AUDIT.md) | Patch-Audit-Szenarien |
 | [SINGULARITY-LAB.md](SINGULARITY-LAB.md) | Singularity-Laufzeiten |
 | [CURSOR-INTEGRATION.md](CURSOR-INTEGRATION.md) | MCP, Skill, Rule |
@@ -142,7 +143,7 @@ Skript: `scripts/php2shell-unchained-menu.sh`. Ohne TTY gibt das Menü das Help 
 | 5 | Reverse Shell | `fetch-reverse-shell`, `reverse-shell fetch`, `listen`, `zer061` |
 | 6 | Sliver C2 + External | `external up`, `external up --tor`, `external status`, `external down`, `tor ip`, `sliver implant-external`, `external patch-audit waf-bypass-top10`, danach Sliver- und Tunnel-Einzelbefehle |
 | 7 | Singularity | `fetch-singularity`, `status`, `runtime`, Container/Host/VM-Befehle, `detect` |
-| 8 | Patch-Audit | `list`, `run all`, `vendor-patch`, `waf-php2shell-signature`, `waf-bypass-top10`, `chain-a-lfi`, `zer061-heap`, `PATCH_AUDIT_DESTRUCTIVE=1` + `upload-progress-off`, `logs` |
+| 8 | Workarounds+Audit | zuerst `workarounds run|auto|last`, darunter Einzelchecks `patch-audit list|run|logs` |
 | 9 | Kit Docs & Tools | `docs list`, `tools list`, `tools` |
 | d | Docker | `ps`, `logs` target/apache/singularity/sliver/tor/tunnel-sliver, `tunnel status`, `external status`, `down`, `export` |
 | h | Hilfe | `help` |
@@ -178,6 +179,7 @@ Menü-Specs mit `|` werden in Umgebungszuweisungen und Argumente zerlegt (`PATCH
 | `external [sub…]` | `lab-external.sh` |
 | `singularity [sub]` | `lab-singularity.sh` |
 | `patch-audit` / `mitigation-audit` / `audit-patch` | `lab-patch-audit.sh` |
+| `workarounds` / `wa` / `workaround-guide` | `lab-workarounds.sh` |
 | `zer061` | `lab-zer061.sh` |
 | `zer061-shell` / `zer061shell` / `revshell-apache` | `lab-zer061-shell.sh` |
 | `scan` | `lab-zer061-scan.sh` |
@@ -300,7 +302,23 @@ Verkehr, den diese Befehle erzeugen:
 
 ---
 
-## 11. Patch-Audit
+## 11. Workarounds (geführt) + Patch-Audit
+
+`workarounds` (`scripts/lab-workarounds.sh`, Menü [8] erster Eintrag) führt in fester Reihenfolge durch alle Audit-Szenarien: Änderungstext anzeigen → Nutzer wendet sie an → ENTER → `patch-audit run <id>` → Log → Abschluss-Auswertung. Der ganze Ablauf braucht nur Terminal 1; Terminal 2 ist bei keinem Schritt Pflicht (nur optionale Live-Logs).
+
+| Befehl | Wirkung |
+|---|---|
+| `workarounds` / `guide` / `list` | Übersicht: Schritte, Reihenfolge, Terminal-Angabe |
+| `workarounds run [id…]` | Geführt mit ENTER pro Schritt (ohne ID: alle 11) |
+| `workarounds auto [id…]` | Ohne Rückfragen, Baseline-Messung |
+| `workarounds last` | `auswertung.md` der letzten Sitzung |
+| `workarounds logs` | Sitzungen auflisten |
+
+Jede Sitzung schreibt `out/workarounds/<UTC-Zeit>/` mit `session.log` (Bildschirm-Mitschnitt), `steps.jsonl`, `step-NN-<id>.log` und `auswertung.md` (OK/OFFEN/PRÜFEN/INFO + Nachjustieren). Anleitung: [WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](WORKAROUNDS-SCHRITT-FUER-SCHRITT.md).
+
+Darunter liegt die Einzelprüfung:
+
+## 11a. Patch-Audit
 
 `scripts/lab-patch-audit.sh` startet `docker compose --profile tools run --rm attacker python3 /opt/lab/scripts/patch_audit.py`.
 

@@ -22,7 +22,8 @@ Umgebung:
   PATCH_AUDIT_PROXY=socks5h://vtbw-php2shell-tor:9050   Egress via Tor (external up --tor)
 
 Doku: $ROOT/docs/PATCH-BYPASS-AUDIT.md
-Menü: [10] Patch-Audit
+Schritt-für-Schritt (geführt, mit Log): vtbw-php2shell-lab workarounds run
+Menü: [8] Patch-Audit → erster Eintrag
 EOF
 }
 

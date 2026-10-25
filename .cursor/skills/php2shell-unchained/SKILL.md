@@ -20,7 +20,7 @@ description: >-
 4. **[5] Reverse Shell** — lukechilds. Nicht `zer061-shell` aus [2] verwechseln.
 5. **[6] Sliver C2 + External** — `fetch-sliver` → `server-up` → `operator` → `listener` → `implant` → `stage`. **External-Modus:** `external up [--tor]` = beide Tunnel (web + sliver-http) + HTTPS-Listener + state.env; mit `--tor` läuft Tunnel-Aufbau UND Audit-Traffic über Tor-Exit (Host-IP verschleiert, Beweis: `tor ip`). Externes C2: `sliver implant-external` (HTTPS → Tunnel-Host). Einzeln: `tunnel up web|sliver-http [--tor]`.
 6. **[7] Singularity** — nach Shell: `fetch-singularity` → `runtime` → vm/host/container. Nie im PHP-Container.
-7. **[8] Patch-Audit** — `patch-audit list|run|logs`. `waf-bypass-top10` = Top-10 WAF-Bypass-Probes. Extern: `external patch-audit <id>` (Tunnel-URL + SOCKS5 automatisch). JSONL in `out/audit/patch-audit.jsonl` (Feld `proxy`).
+7. **[8] Workarounds + Patch-Audit** — Einstieg: `workarounds run` (geführt, nur Terminal 1, Log+Auswertung in `out/workarounds/<UTC>/`), `workarounds auto` = Baseline, `workarounds last`. Einzelchecks: `patch-audit list|run|logs`. Extern: `external patch-audit <id>`. JSONL `out/audit/patch-audit.jsonl` (Feld `proxy`). Terminal 2 nur bei shell/console/listener/logs.
 8. **[9] Docs/Tools**, **[d] Docker** (`logs target|apache|singularity|sliver|tunnel|tunnel-sliver|tor`, `down` inkl. sliver/tunnel/tor + external state).
 
 ## MCP
@@ -33,7 +33,8 @@ description: >-
   - `tor`: subcommand `up|ip|status|log|down`
   - `logs`: subcommand `target|apache|singularity|sliver|tunnel|tunnel-sliver|tor`
   - `patch-audit`: `subcommand=run`, extra = Szenario (`waf-bypass-top10`, `vendor-patch`, `all`). `logs` liest JSONL.
-- Docs: `HOWTO-DE`, `SINGULARITY`, `PATCH-AUDIT`, `EXPLOIT-CHAIN`, `CURSOR`
+  - `workarounds`: subcommand `run|auto|last|logs|guide`, extra = einzelne Schritt-ID
+- Docs: `HOWTO-DE`, `WORKAROUNDS`, `SINGULARITY`, `PATCH-AUDIT`, `EXPLOIT-CHAIN`, `CURSOR`
 
 ## Agent-Regeln
 
