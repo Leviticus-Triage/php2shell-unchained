@@ -1,0 +1,8 @@
+# Lab-Tor: SOCKS5 fuer attacker/patch-audit, TransPort+DNS fuer Tunnel-Sidecar.
+SocksPort 0.0.0.0:9050
+TransPort 0.0.0.0:9040
+DNSPort 0.0.0.0:5353
+Log notice stdout
+DataDirectory /var/lib/tor
+AvoidDiskWrites 1
+User tor

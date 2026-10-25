@@ -1,0 +1,16 @@
+.env
+logs/
+__pycache__/
+*.pyc
+third_party/php-up-2026/
+third_party/jackalsyn-reup/
+third_party/zer061-php2shell/out/
+third_party/php-up-2026/out/jackalsyn-syms.env
+third_party/zer061-php2shell/out2/
+third_party/zer061-php2shell/
+third_party/reverse-shell/
+third_party/singularity/
+third_party/sliver/
+out/
+third_party/*.zip
+third_party/*.tar.gz

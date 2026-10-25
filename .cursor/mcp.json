@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "php2shell-unchained": {
+      "command": "python3",
+      "args": [
+        "/home/danii/Schreibtisch/cursor-projects/php2shell-lab-vtbw/mcp/php2shell_lab_mcp.py"
+      ],
+      "env": {
+        "PHP2SHELL_LAB_ROOT": "/home/danii/Schreibtisch/cursor-projects/php2shell-lab-vtbw",
+        "VTBW_LAB_WRAPPER": "/home/danii/Schreibtisch/cursor-projects/vtbw-php2shell-lab"
+      },
+      "description": "PHP2Shell unchained: [1] FPM [2] Zer061 [3] Jackalsyn [6] Sliver [7] Singularity [8] patch-audit"
+    }
+  }
+}

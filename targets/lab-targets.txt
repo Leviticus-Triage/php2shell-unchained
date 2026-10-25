@@ -1,0 +1,10 @@
+# Lab-internal URLs (scanner / exploit.py -l) — apache-multi-up startet beide.
+http://target-apache/index.php
+http://target-apache-2/index.php
+
+# Host-published (nur wenn Docker Port-Mapping auf 127.0.0.1 funktioniert):
+# http://127.0.0.1:19288/index.php
+# http://127.0.0.1:19289/index.php
+
+# FPM-Target (UAF/Chain A, kein Zer061-Heap):
+# http://target:80/index.php

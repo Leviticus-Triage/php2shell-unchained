@@ -1,0 +1,176 @@
+# Isolated PHP2Shell lab — target PHP 8.4.4 FPM (known PoC-vulnerable; VTBW was 8.1.34).
+# Host access only via 127.0.0.1:19281. Lab network has no outbound internet.
+
+services:
+  target:
+    build:
+      context: ./target
+      args:
+        PHP_TARGET_VERSION: ${PHP_TARGET_VERSION:-8.4.4}
+    container_name: vtbw-php2shell-target
+    hostname: target
+    environment:
+      LAB_MODE: "true"
+    networks:
+      - lab_isolated
+    ports:
+      - "127.0.0.1:19281:80"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /var/lib/php/sessions:size=16m,uid=33,gid=33,mode=1777
+      - /var/log/nginx:size=8m
+      - /var/log/php-fpm:size=8m
+      - /run:size=8m
+      - /var/lib/nginx:size=16m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1/index.php"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Zer061-style: same mounts as third_party/zer061-php2shell/docker/docker-compose.yml
+  target-apache:
+    image: php:8.4.26-apache
+    platform: linux/amd64
+    container_name: vtbw-php2shell-apache
+    hostname: target-apache
+    networks:
+      - lab_isolated
+    ports:
+      - "127.0.0.1:19288:80"
+    volumes:
+      - ./third_party/zer061-php2shell/docker/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
+      - ./third_party/zer061-php2shell/docker/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
+      - ./third_party/zer061-php2shell/docker/www:/var/www/html:ro
+      - ./third_party/zer061-php2shell/out:/out
+    command:
+      - /bin/sh
+      - -c
+      - chmod 1777 /out 2>/dev/null || true; exec apache2-foreground
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    profiles:
+      - apache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1/index.php | grep -q OK"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+
+  target-apache-2:
+    image: php:8.4.26-apache
+    platform: linux/amd64
+    container_name: vtbw-php2shell-apache-2
+    hostname: target-apache-2
+    networks:
+      - lab_isolated
+    ports:
+      - "127.0.0.1:19289:80"
+    volumes:
+      - ./third_party/zer061-php2shell/docker/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
+      - ./third_party/zer061-php2shell/docker/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
+      - ./third_party/zer061-php2shell/docker/www:/var/www/html:ro
+      - ./third_party/zer061-php2shell/out2:/out
+    command:
+      - /bin/sh
+      - -c
+      - chmod 1777 /out 2>/dev/null || true; exec apache2-foreground
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    profiles:
+      - multi
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1/index.php | grep -q OK"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+
+  attacker:
+    build:
+      context: ./attacker
+    container_name: vtbw-php2shell-attacker
+    networks:
+      - lab_isolated
+      - lab_egress
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    volumes:
+      - ./third_party:/opt/third_party:ro
+      # Zer061 --revshell writes out/c; target-apache mounts the same dir at /out
+      - ./third_party/zer061-php2shell/out:/opt/third_party/zer061-php2shell/out
+      - ./targets:/opt/lab/targets:ro
+      # patch-audit JSONL + ops artifacts
+      - ./out:/opt/lab/out
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    profiles:
+      - tools
+    stdin_open: true
+    tty: true
+
+  # LKM build against HOST kernel (privileged). Profile: singularity — not started by default.
+  singularity-lab:
+    build:
+      context: ./singularity-lab
+    container_name: vtbw-php2shell-singularity-lab
+    hostname: singularity-lab
+    networks:
+      - lab_isolated
+    privileged: true
+    pid: host
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - ${SINGULARITY_HEADERS:-/usr/src/linux-headers-none}:/usr/src/linux-headers-host:ro
+      - ./third_party/singularity:/opt/singularity
+    profiles:
+      - singularity
+    restart: unless-stopped
+
+  # Sliver C2 server (BishopFox) — adversary emulation, profile: sliver
+  sliver:
+    build:
+      context: .
+      dockerfile: sliver/Dockerfile
+    container_name: vtbw-php2shell-sliver
+    hostname: sliver
+    networks:
+      - lab_isolated
+      - lab_egress
+    volumes:
+      - ./out/sliver:/out
+      # Server-State (DB, CAs) — Default-Pfad ist ~/.sliver, nicht SLIVER_ROOT allein.
+      - ./out/sliver/server-data:/root/.sliver
+    ports:
+      - "127.0.0.1:31337:31337"
+    profiles:
+      - sliver
+    restart: unless-stopped
+
+networks:
+  lab_isolated:
+    driver: bridge
+    internal: true
+  # Egress for cloudflared (Quick Tunnel needs internet). Targets stay internal-only.
+  lab_egress:
+    driver: bridge
+    internal: false

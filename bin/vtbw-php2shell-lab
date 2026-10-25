@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# PHP2Shell - unchained | By Leviticus-Triage
+# Aufruf von jedem Arbeitsverzeichnis (PATH-Symlink wird aufgelöst).
+set -euo pipefail
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+LAB="$(cd -P "$(dirname "$SOURCE")/.." && pwd)"
+if [[ ! -d "$LAB/scripts" ]]; then
+  echo "Lab nicht gefunden (erwartet scripts/ neben bin/): $LAB" >&2
+  exit 1
+fi
+export VTBW_LAB_WRAPPER="$LAB/bin/vtbw-php2shell-lab"
+# shellcheck source=/dev/null
+source "$LAB/scripts/docker-env.sh"
+cd "$LAB"
+# shellcheck source=/dev/null
+source "$LAB/scripts/lab-dispatch.sh"
+lab_dispatch "${1:-menu}" "${@:2}"
