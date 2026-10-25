@@ -2,6 +2,8 @@
 
 **By Leviticus-Triage**
 
+Einstieg und Übersicht (EN): [../README.md](../README.md) · Dokumentationsindex: [README.md](README.md)
+
 Dieses Dokument beschreibt den Funktionsumfang des Labs im aktuellen Stand: Befehle, Container, Netze, Umgebungsvariablen, Logs, Menü und Integrationen. Es enthält keine Bewertung der Verfahren. Ein Hinweis zur zulässigen Nutzung steht am Ende.
 
 Kurzindex der übrigen Dateien:

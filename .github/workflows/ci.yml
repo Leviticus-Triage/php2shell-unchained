@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shell-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax check (scripts)
+        run: |
+          set -e
+          while IFS= read -r -d '' f; do
+            bash -n "$f"
+          done < <(find scripts bin -type f \( -name '*.sh' -o -name 'vtbw-php2shell-*' -o -name 'php2shell-unchained' \) -print0 2>/dev/null || true)
+          for f in bin/*; do
+            [[ -f "$f" && -x "$f" ]] && head -1 "$f" | grep -q bash && bash -n "$f" || true
+          done
+      - name: Python compile (attacker + mcp)
+        run: |
+          python3 -m compileall -q attacker mcp
