@@ -11,6 +11,7 @@
 | Sec / patch validation | [WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](WORKAROUNDS-SCHRITT-FUER-SCHRITT.md) + [PATCH-BYPASS-AUDIT.md](PATCH-BYPASS-AUDIT.md) |
 | Exploit routing | [EXPLOIT-CHAIN-COMPARISON.md](EXPLOIT-CHAIN-COMPARISON.md) |
 | Phased lab flow | [HOWTO-DE.md](HOWTO-DE.md) |
+| **End-to-end (Setup → Exploit → Post-Exploit)** | **[WORKFLOW-KOMPLETT.md](WORKFLOW-KOMPLETT.md)** |
 | Cursor IDE | [CURSOR-INTEGRATION.md](CURSOR-INTEGRATION.md) |
 | LKM module | [SINGULARITY-LAB.md](SINGULARITY-LAB.md) |
 | Policy | [../SECURITY.md](../SECURITY.md) |

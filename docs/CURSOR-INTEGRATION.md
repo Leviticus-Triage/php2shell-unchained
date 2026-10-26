@@ -37,7 +37,7 @@ Danach: **Cursor → Settings → MCP** → Server `php2shell-unchained` grün /
 | `lab_help` | Alle CLI-Befehle |
 | `lab_status` | `docker ps` Lab-Container |
 | `lab_run` | Whitelist. Argumente: `command`, `subcommand`, `extra` |
-| `lab_read_doc` | `HOWTO-DE`, `EXPLOIT-CHAIN`, `CURSOR`, `SINGULARITY`, `PATCH-AUDIT` |
+| `lab_read_doc` | `HOWTO-DE`, `WORKFLOW-KOMPLETT`, `WORKFLOW`, `EXPLOIT-CHAIN`, `CURSOR`, `SINGULARITY`, `PATCH-AUDIT`, `WORKAROUNDS` |
 | `lab_exploit_map` | FPM, Zer061, Jackalsyn, Singularity, Patch-Audit |
 
 Menüpfad für den Agenten: **[1]** FPM → **[2]** oder **[3]** → **[6]** Singularity. Sec-Team **[7]**. **[5]** ist lukechilds, Kit-Shell ist `zer061-shell`.

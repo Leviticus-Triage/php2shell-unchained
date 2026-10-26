@@ -190,6 +190,7 @@ Reference: [docs/PATCH-BYPASS-AUDIT.md](docs/PATCH-BYPASS-AUDIT.md).
 |----------|----------|---------|
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | DE | Complete technical manual (commands, compose, env, logs) |
 | [docs/HOWTO-DE.md](docs/HOWTO-DE.md) | DE | Phased workflow 1–10 |
+| [docs/WORKFLOW-KOMPLETT.md](docs/WORKFLOW-KOMPLETT.md) | DE | **Full workflow:** setup → exploit → post-exploit → audit |
 | [docs/WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](docs/WORKAROUNDS-SCHRITT-FUER-SCHRITT.md) | DE | Guided mitigation walkthrough |
 | [docs/EXPLOIT-CHAIN-COMPARISON.md](docs/EXPLOIT-CHAIN-COMPARISON.md) | DE | Chain vs. chain matrix |
 | [docs/SINGULARITY-LAB.md](docs/SINGULARITY-LAB.md) | DE | LKM lab modes |

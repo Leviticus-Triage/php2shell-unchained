@@ -30,6 +30,7 @@ ALLOWED_COMMANDS = frozenset(
     docs tools reverse-shell revshell export menu unchained help ps logs down
     patch-audit mitigation-audit external tor workarounds wa
     validate validation validation-matrix
+    workflow-verify verify-workflow
     """.split()
 )
 
@@ -222,6 +223,8 @@ def lab_read_doc(doc: str = "HOWTO-DE") -> str:
         "SINGULARITY": LAB / "docs" / "SINGULARITY-LAB.md",
         "PATCH-AUDIT": LAB / "docs" / "PATCH-BYPASS-AUDIT.md",
         "WORKAROUNDS": LAB / "docs" / "WORKAROUNDS-SCHRITT-FUER-SCHRITT.md",
+        "WORKFLOW-KOMPLETT": LAB / "docs" / "WORKFLOW-KOMPLETT.md",
+        "WORKFLOW": LAB / "docs" / "WORKFLOW-KOMPLETT.md",
     }
     path = mapping.get(doc.upper().replace(".MD", ""), mapping["HOWTO-DE"])
     if doc.endswith(".md"):

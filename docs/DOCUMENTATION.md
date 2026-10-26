@@ -11,6 +11,7 @@ Kurzindex der übrigen Dateien:
 | Datei | Inhalt |
 |-------|--------|
 | [HOWTO-DE.md](HOWTO-DE.md) | Ablauf in Phasen 1–10 |
+| [WORKFLOW-KOMPLETT.md](WORKFLOW-KOMPLETT.md) | Gesamtworkflow Lab-Erstellung → Exploitation → Post-Exploitation → Audit |
 | [WORKAROUNDS-SCHRITT-FUER-SCHRITT.md](WORKAROUNDS-SCHRITT-FUER-SCHRITT.md) | Workarounds Schritt für Schritt (1 Terminal, Log + Auswertung) |
 | [PATCH-BYPASS-AUDIT.md](PATCH-BYPASS-AUDIT.md) | Patch-Audit-Szenarien |
 | [SINGULARITY-LAB.md](SINGULARITY-LAB.md) | Singularity-Laufzeiten |

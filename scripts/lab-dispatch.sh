@@ -46,6 +46,8 @@ lab_dispatch() {
       exec "$LAB/scripts/make-export-archive.sh" ;;
     validate|validation|validation-matrix)
       exec "$LAB/scripts/lab-validation-matrix.sh" ;;
+    workflow-verify|verify-workflow)
+      exec "$LAB/scripts/lab-workflow-verify.sh" ;;
     menu|unchained)
       exec "$LAB/scripts/php2shell-unchained-menu.sh" ;;
     down)

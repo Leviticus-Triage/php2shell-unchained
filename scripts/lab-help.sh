@@ -60,6 +60,7 @@ Kit internals
   tools [list|run SCRIPT]      tools/*.py Forschungs-Skripte
 
   validate                   Full-Stack-Matrix (FPM-Versionen, Zer061, External, Auswertung)
+  workflow-verify            Stichprobe Setup→Exploit→Post-Exploit (Log: out/workflow-verify/)
   export                     Portable tar.gz
 
 Lab: $LAB
