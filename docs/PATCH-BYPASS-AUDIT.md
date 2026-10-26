@@ -49,6 +49,10 @@ Sec-Teams prüfen, ob Emergency-Patches und Workarounds **wirklich** greifen ode
 
 **Hinweis:** Vollständiger Fix = **Vendor-Patch**. Workarounds reduzieren Risiko; einige Kombinationen (618 ohne Progress-Feld, 115560) umgehen einzelne Controls.
 
+## Lab-Stack vor dem Audit
+
+`patch-audit run …` startet bei Bedarf automatisch das FPM-Target (`docker compose up -d target`) und prüft per `verify-target.sh`, dass der Attacker-Container `http://target` auflösen kann. Ohne laufenden Target-Service schlägt Docker-DNS fehl (`Name or service not known`). Szenario `zer061-heap` startet zusätzlich Apache (`fetch-zer061` muss vorhanden sein). Externe URLs (`PATCH_AUDIT_URL=https://…`) lösen **kein** lokales `up` aus.
+
 ## Schritt für Schritt (geführt, mit Log)
 
 ```bash

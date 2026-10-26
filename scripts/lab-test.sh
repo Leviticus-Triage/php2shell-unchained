@@ -6,6 +6,13 @@ source "$ROOT/scripts/docker-env.sh"
 ROUNDS="${ROUNDS:-5}"
 
 cd "$ROOT"
+# shellcheck source=scripts/lab-ensure-stack.sh
+source "$ROOT/scripts/lab-ensure-stack.sh"
+export LAB_ROOT="$ROOT"
+lab_ensure_fpm_target || {
+  echo ">>> Target fehlt. Starte mit: $ROOT/scripts/lab-up.sh  oder  vtbw-php2shell-lab up" >&2
+  exit 1
+}
 echo ">>> Step 1/2: target health (no exploit — does NOT show Armed)"
 docker compose --profile tools run --rm attacker /opt/lab/scripts/verify-target.sh
 echo

@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=scripts/docker-env.sh
 source "$ROOT/scripts/docker-env.sh"
+# shellcheck source=scripts/lab-ensure-stack.sh
+source "$ROOT/scripts/lab-ensure-stack.sh"
+export LAB_ROOT="$ROOT"
 ACTION="${1:-help}"
 cd "$ROOT"
 
@@ -61,6 +64,14 @@ case "$ACTION" in
   run)
     shift || true
     [[ $# -ge 1 ]] || { echo "Usage: $0 run <scenario>|all" >&2; exit 1; }
+    if ! lab_ensure_for_patch_audit "$@"; then
+      echo "Patch-Audit abgebrochen — Lab-Stack nicht bereit." >&2
+      exit 1
+    fi
+    if lab_audit_needs_local_fpm; then
+      docker compose build attacker >/dev/null
+      lab_preflight_attacker_to_target || exit 1
+    fi
     run_in_attacker run "$@"
     ;;
   *)

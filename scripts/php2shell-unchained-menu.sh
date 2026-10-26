@@ -4,7 +4,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=scripts/docker-env.sh
 source "$ROOT/scripts/docker-env.sh"
 export LAB="$ROOT"
-WRAPPER="${VTBW_LAB_WRAPPER:-$HOME/Schreibtisch/cursor-projects/vtbw-php2shell-lab}"
+WRAPPER="${VTBW_LAB_WRAPPER:-$ROOT/bin/vtbw-php2shell-lab}"
 
 banner() {
   clear 2>/dev/null || true

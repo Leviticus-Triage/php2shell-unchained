@@ -110,6 +110,10 @@ def parse_php_version(text: str) -> tuple[int, int, int] | None:
     return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
 
+class TargetUnreachable(Exception):
+    """DNS/TCP failure reaching audit target (lab stack down or wrong URL)."""
+
+
 def http_get(url: str, timeout: float = 8.0) -> tuple[int, dict[str, str], bytes]:
     req = urllib.request.Request(url, method="GET")
     try:
@@ -119,6 +123,8 @@ def http_get(url: str, timeout: float = 8.0) -> tuple[int, dict[str, str], bytes
     except urllib.error.HTTPError as e:
         headers = {k.lower(): v for k, v in e.headers.items()} if e.headers else {}
         return e.code, headers, e.read(65536) if e.fp else b""
+    except urllib.error.URLError as e:
+        raise TargetUnreachable(f"{url}: {e.reason}") from e
 
 
 def http_post_multipart(
@@ -145,6 +151,8 @@ def http_post_multipart(
             return resp.status, resp.read(8192)
     except urllib.error.HTTPError as e:
         return e.code, e.read(8192) if e.fp else b""
+    except urllib.error.URLError as e:
+        raise TargetUnreachable(f"{url}: {e.reason}") from e
 
 
 def base_url() -> str:
@@ -519,7 +527,14 @@ def cmd_run(names: list[str]) -> int:
         if sid not in CHECKS:
             print(f"[SKIP] unknown scenario: {sid}")
             continue
-        res = CHECKS[sid](url)
+        try:
+            res = CHECKS[sid](url)
+        except TargetUnreachable as e:
+            res = Result(
+                sid,
+                "SKIP",
+                f"Target unreachable: {e}. Lab: vtbw-php2shell-lab up — then retry.",
+            )
         print(res.line())
         audit_log({
             "scenario": sid, "status": res.status,

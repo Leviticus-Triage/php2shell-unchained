@@ -7,10 +7,10 @@ source "$ROOT/scripts/docker-env.sh"
 MODE="${1:-test}"
 
 cd "$ROOT"
-if ! docker ps --format '{{.Names}}' | grep -qx vtbw-php2shell-target; then
-  echo "Start lab first: $ROOT/scripts/lab-up.sh" >&2
-  exit 1
-fi
+# shellcheck source=scripts/lab-ensure-stack.sh
+source "$ROOT/scripts/lab-ensure-stack.sh"
+export LAB_ROOT="$ROOT"
+lab_ensure_fpm_target || exit 1
 
 case "$MODE" in
   test)
