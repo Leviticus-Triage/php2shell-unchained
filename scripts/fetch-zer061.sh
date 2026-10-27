@@ -11,13 +11,19 @@ if [[ -d "$DEST/.git" && -f "$DEST/exploit.py" ]]; then
 fi
 
 try_clone() {
-  local url="$1"
+  local url="$1" tmp="${DEST}.clone.$$"
   echo "[fetch-zer061] try $url"
-  rm -rf "$DEST"
+  rm -rf "$tmp"
   mkdir -p "$ROOT/third_party"
-  if ! git clone --depth 1 "$url" "$DEST" 2>/dev/null; then
+  if ! git clone --depth 1 "$url" "$tmp" 2>/dev/null; then
+    rm -rf "$tmp"
     return 1
   fi
+  if [[ -d "$DEST" ]]; then
+    chmod -R u+w "$DEST" 2>/dev/null || true
+    rm -rf "$DEST" 2>/dev/null || true
+  fi
+  mv "$tmp" "$DEST"
   if [[ -f "$DEST/exploit.py" ]]; then
     return 0
   fi
