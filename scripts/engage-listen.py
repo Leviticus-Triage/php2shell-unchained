@@ -12,7 +12,17 @@ def main() -> int:
     port = int(sys.argv[1])
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("0.0.0.0", port))
+    try:
+        sock.bind(("0.0.0.0", port))
+    except OSError as exc:
+        if exc.errno == 98:
+            print(
+                f"[listener] FEHLER: Port {port} ist belegt (alter Listener). "
+                "Engage räumt den Port beim nächsten Lauf.",
+                flush=True,
+            )
+            return 1
+        raise
     sock.listen(1)
     print(f"[listener] warte auf 0.0.0.0:{port}", flush=True)
     conn, addr = sock.accept()

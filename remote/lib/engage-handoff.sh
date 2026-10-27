@@ -55,21 +55,12 @@ engage_print_handoff() {
   Singularity:     ${sing:-?} · LOAD: ${load:-n/a}
   External:        ${ext:-?}
 
-── Jetzt: Shells / Terminals ──
-  WICHTIG: Du bist NICHT in tmux. Erst attachieren, dann Fenster wechseln:
-
-  1) REVERSE-SHELL (wenn Lab-Foothold ok):
+── Shell im Listener ──
+  Status: ${labfh:-?}
+  "sessions should be nested" heißt: du bist SCHON in tmux. Nicht nochmal attach.
+  Fenster wechseln: Ctrl+b, dann w, dann listener.
+  Nur aus einer normalen Shell (Prompt ohne tmux):
        tmux attach -t $session
-       → dann: Fenster **listener** öffnen (Ctrl+b 0 oder Ctrl+b w → listener)
-       → dort läuft nc und fängt die Shell ab.
-
-  2) Schnell direkt in Fenster springen (von außerhalb):
-       tmux switch-client -t $session \; select-window -t $session:listener
-       tmux switch-client -t $session \; select-window -t $session:sliver-console
-       tmux switch-client -t $session \; select-window -t $session:singularity-load
-
-  3) Alle Fenster anzeigen:
-       tmux list-windows -t $session
 
 ── Manuelle Payloads (nur wenn auto-Foothold fehlschlug) ──
 EOF

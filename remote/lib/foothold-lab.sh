@@ -11,18 +11,41 @@ engage_lab_foothold_attacker_image() {
   printf '%s' "${ENGAGE_LAB_ATTACKER_IMAGE:-php2shell-unchained-attacker:latest}"
 }
 
-# Drop leftover nc/ncat binds (SO_REUSEPORT) so the new listener is the only one.
+# Free a listen port held by an earlier engage listener (nc or engage-listen.py).
 engage_reclaim_listen_port() {
-  local port="$1" pid comm
+  local port="$1" pid comm args
   [[ "$port" =~ ^[0-9]+$ ]] || return 0
   while read -r pid; do
     [[ -z "$pid" ]] && continue
     comm="$(ps -p "$pid" -o comm= 2>/dev/null || true)"
+    args="$(ps -p "$pid" -o args= 2>/dev/null || true)"
     case "$comm" in
       nc|ncat|netcat) kill "$pid" 2>/dev/null || true ;;
+      python|python3)
+        [[ "$args" == *engage-listen.py* ]] && kill "$pid" 2>/dev/null || true
+        ;;
     esac
   done < <(ss -H -tlnp "sport = :$port" 2>/dev/null | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u)
-  sleep 0.2
+  sleep 0.3
+}
+
+engage_port_busy() {
+  ss -H -tln "sport = :$1" 2>/dev/null | grep -q .
+}
+
+# Prints a free port, starting at $1. Kills stale engage listeners first.
+engage_claim_listen_port() {
+  local base="$1" p i
+  for i in $(seq 0 15); do
+    p=$((base + i))
+    engage_reclaim_listen_port "$p"
+    if ! engage_port_busy "$p"; then
+      printf '%s' "$p"
+      return 0
+    fi
+  done
+  echo "[foothold] kein freier Port ab $base" >&2
+  return 1
 }
 
 engage_lab_foothold_supported() {
