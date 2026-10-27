@@ -45,6 +45,16 @@ Phases that need parallel windows (foothold listener, Sliver server/listener/con
 
 Override: `ENGAGE_TERMINAL=tmux|gnome|none`.
 
+## Menu (shell UI)
+
+Main menu key **[e]** opens the engagement console — scope management, run
+wizard, resume, status, listener respawn, report viewer, reverse-shell
+variants. Same actions as the CLI, guided.
+
+![menu](../docs/assets/remote-menu.png)
+
+Validated end-to-end against a Docker target: [docs/REMOTE-ENGAGEMENT-E2E.md](../docs/REMOTE-ENGAGEMENT-E2E.md).
+
 ## Quick start (authorized staging host)
 
 ```bash

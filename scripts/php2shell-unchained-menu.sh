@@ -92,6 +92,7 @@ main_loop() {
     [8] Workarounds+Audit  SCHRITT-FÜR-SCHRITT · Patch/WAF prüfen · Log+Auswertung
     [9] Kit Docs & Tools   docs · tools
     [a] Assess (eigene echte Hosts)  scope-authorized.txt + assess run
+    [e] REMOTE ENGAGEMENT  Produktiv (RoE): Wizard · Vollkette · Auto-Terminals
     [s] Session (tmux)     lab-Panes: stack · logs · audit
     [d] Docker             ps · logs · down · export
     [h] Hilfe (alle CLI-Befehle)
@@ -103,6 +104,7 @@ MENU
     case "${top:-}" in
       0|q|Q) echo "Bye."; exit 0 ;;
       h|H) run_spec help ;;
+      e|E) "$ROOT/remote/menu.sh" || true ;;
       d|D)
         dispatch_sub "Docker" \
           "ps" ps \

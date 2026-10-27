@@ -8,7 +8,7 @@ phase_fingerprint() {
     "$LAB_ROOT/scripts/lab-patch-audit.sh" run vendor-patch \
     > "$log" 2>&1 || true
   local verdict
-  verdict="$(grep -Eo 'PASS|FAIL|INFO' "$log" | head -1 || true)"
+  verdict="$(grep -oE '\[(PASS|FAIL)\]' "$log" | tail -1 | tr -d '[]' || true)"
   state_set 20 VENDOR_PATCH "${verdict:-UNKNOWN}"
   state_mark 20
   echo "[20] fingerprint ✓ vendor-patch: ${verdict:-UNKNOWN}"

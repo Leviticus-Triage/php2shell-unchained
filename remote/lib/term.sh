@@ -26,20 +26,25 @@ term_spawn_jobs() {
 
   case "$backend" in
     tmux)
-      tmux kill-session -t "$session" 2>/dev/null || true
-      tmux new-session -d -s "$session" -x 220 -y 50
+      # Session nur anlegen, wenn sie nicht existiert — sonst laufende
+      # Listener-Fenster (z.B. Phase 40) bei Post-Ex (Phase 50) erhalten.
+      local exists=0
+      tmux has-session -t "$session" 2>/dev/null && exists=1
+      if [[ $exists -eq 0 ]]; then
+        tmux new-session -d -s "$session" -x 220 -y 50
+      fi
       local first=1 spec name cmd
       for spec in "$@"; do
         name="${spec%%|*}"; cmd="${spec#*|}"
         local wrapped="cd '$LAB_ROOT' && { $cmd ; } 2>&1 | tee '$logdir/$name.log'; echo; echo '[job $name beendet]'; exec bash"
-        if [[ $first -eq 1 ]]; then
+        if [[ $exists -eq 0 && $first -eq 1 ]]; then
           tmux rename-window -t "$session:0" "$name"
           tmux send-keys -t "$session:0" "$wrapped" C-m
-          first=0
         else
           tmux new-window -t "$session" -n "$name"
           tmux send-keys -t "$session" "$wrapped" C-m
         fi
+        first=0
       done
       echo "[term] Attach:  tmux attach -t $session"
       echo "[term] Fenster: tmux list-windows -t $session"
