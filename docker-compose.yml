@@ -53,9 +53,9 @@ services:
     ports:
       - "127.0.0.1:19288:80"
     volumes:
-      - ./third_party/zer061-php2shell/docker/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
-      - ./third_party/zer061-php2shell/docker/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
-      - ./third_party/zer061-php2shell/docker/www:/var/www/html:ro
+      - ./target-apache/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
+      - ./target-apache/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
+      - ./target-apache/www:/var/www/html:ro
       - ./third_party/zer061-php2shell/out:/out
     command:
       - /bin/sh
@@ -83,9 +83,9 @@ services:
     ports:
       - "127.0.0.1:19289:80"
     volumes:
-      - ./third_party/zer061-php2shell/docker/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
-      - ./third_party/zer061-php2shell/docker/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
-      - ./third_party/zer061-php2shell/docker/www:/var/www/html:ro
+      - ./target-apache/php.ini:/usr/local/etc/php/conf.d/zz-php2shell.ini:ro
+      - ./target-apache/apache.conf:/etc/apache2/conf-enabled/zz-php2shell.conf:ro
+      - ./target-apache/www:/var/www/html:ro
       - ./third_party/zer061-php2shell/out2:/out
     command:
       - /bin/sh

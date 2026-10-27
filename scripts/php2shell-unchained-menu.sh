@@ -92,10 +92,10 @@ main_loop() {
     [8] Workarounds+Audit  SCHRITT-FÜR-SCHRITT · Patch/WAF prüfen · Log+Auswertung
     [9] Kit Docs & Tools   docs · tools
     [a] Assess (eigene echte Hosts)  scope-authorized.txt + assess run
-    [e] REMOTE ENGAGEMENT  Produktiv (RoE): Wizard · Vollkette · Auto-Terminals
+    [e] REMOTE ENGAGEMENT  RoE: Wizard [2] · Lab-Vollkette+LOAD [l] · Auto-Terminals
                            ├─ Kits/RAAS/Tor/Sliver/Singularity/External
-                           ├─ [9] Sliver · [a] Singularity · [b] Lab-External
-                           └─ Defaults: C2=sliver · Singularity=lab · RS=on
+                           ├─ [9] Sliver · [a] Singularity · [b] External · [c] mod_php
+                           └─ Lab-Preset [l]: 172.21.0.2 · :19288 · Singularity LOAD
     [s] Session (tmux)     lab-Panes: stack · logs · audit
     [d] Docker             ps · logs · down · export
     [h] Hilfe (alle CLI-Befehle)

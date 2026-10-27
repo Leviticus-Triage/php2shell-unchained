@@ -10,17 +10,29 @@ source "$ROOT/scripts/lib/singularity-runtime.sh"
 ACTION="${1:-help}"
 cd "$ROOT"
 CONTAINER="vtbw-php2shell-singularity-lab"
+IMAGE="php2shell-unchained-singularity-lab"
 
 cmd_container_up() {
   singularity_banner
+  if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+    echo "[singularity] Container $CONTAINER läuft bereits (idempotent)."
+    return 0
+  fi
+  if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+    echo "[singularity] Bestehenden Container starten: $CONTAINER"
+    docker start "$CONTAINER"
+    return 0
+  fi
   local hdr
   if ! hdr="$(singularity_headers_path)"; then
     echo "FEHLER: Host-Kernel-Headers fehlen — $(singularity_headers_hint)" >&2
     exit 1
   fi
   export SINGULARITY_HEADERS="$hdr"
-  docker compose --profile singularity build singularity-lab
-  docker compose --profile singularity up -d singularity-lab
+  if ! docker image inspect "${IMAGE}:latest" >/dev/null 2>&1; then
+    docker compose --profile singularity build singularity-lab
+  fi
+  docker compose --profile singularity up -d --no-recreate singularity-lab
   echo "Container: $CONTAINER (privileged, Host-Module/Headers gemountet)"
 }
 

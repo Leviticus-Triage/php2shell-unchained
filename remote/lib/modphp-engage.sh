@@ -7,6 +7,17 @@ modphp_apache_url() {
     return 0
   fi
   if engage_target_is_lab; then
+    if [[ -n "${LAB_APACHE_URL:-}" ]]; then
+      printf '%s' "$LAB_APACHE_URL"
+      return 0
+    fi
+    local lib="$LAB_ROOT/scripts/lib/lab-apache-url.sh"
+    if [[ -f "$lib" ]]; then
+      # shellcheck source=scripts/lib/lab-apache-url.sh
+      source "$lib"
+      lab_apache_resolve_url 2>/dev/null || lab_apache_host_url
+      return 0
+    fi
     printf '%s' "http://127.0.0.1:19288/index.php"
     return 0
   fi
@@ -78,7 +89,8 @@ modphp_run_exploit() {
   if [[ "${ENGAGE_MODPHP_LAB:-auto}" != "off" ]] && engage_target_is_lab && command -v docker >/dev/null; then
     echo "== mod_php lab: apache-up (Docker) + PoC :19288 ==" >>"$log"
     if bash "$LAB_ROOT/scripts/lab-apache-up.sh" >>"$log" 2>&1; then
-      local lab_u="http://127.0.0.1:19288/index.php"
+      local lab_u="${LAB_APACHE_URL:-}"
+      [[ -z "$lab_u" ]] && lab_u="$(modphp_apache_url)"
       echo "== mod_php + PoC (lab apache) → $lab_u ==" >>"$log"
       python3 "$kit" -u "$lab_u" >>"$log" 2>&1 || true
       ran=1
