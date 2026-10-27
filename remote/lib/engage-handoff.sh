@@ -57,9 +57,9 @@ engage_print_handoff() {
 
 ── Shell ──
   Status: ${labfh:-?}
-  Es gibt kein tmux. Ein Fenster „PHP2SHELL shell“ wurde geöffnet.
-  Dort tippen: id
-  Sliver, Tor, Singularity und Tunnel stehen nur in den Logs, nicht in Extra-Fenstern.
+  Fenster „PHP2SHELL shell“: dort ist die Ziel-Shell.
+  cd /tmp     (einziges beschreibbares Verzeichnis, Root-FS ist read-only, kein sudo)
+  exit        öffnet im selben Fenster: 2 Sliver, 3 Singularity, 4 LOAD, 5 Cloudflare-URLs
 
 ── Manuelle Payloads (nur wenn auto-Foothold fehlschlug) ──
 EOF

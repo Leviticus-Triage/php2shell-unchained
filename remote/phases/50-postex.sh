@@ -33,7 +33,9 @@ phase_postex() {
   engage_external_bootstrap
   external_engage_jobs jobs
 
-  if [[ ${#jobs[@]} -gt 0 ]]; then
+  if [[ "$(term_backend)" == "desk" ]]; then
+    echo "[50] Post-Ex-Menü im Fenster „PHP2SHELL shell“: exit, dann 2 Sliver, 3 Singularity, 4 LOAD, 5 URLs"
+  elif [[ ${#jobs[@]} -gt 0 ]]; then
     term_spawn_jobs "$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
   fi
   state_set 50 C2_PROFILE "$profile"

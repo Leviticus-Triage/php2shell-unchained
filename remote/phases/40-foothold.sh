@@ -102,7 +102,7 @@ phase_foothold() {
   state_mark 40
 
   cat <<EOF
-[40] foothold ✓ Listener: $lhost:$lport (tmux $sid, Fenster listener)
+[40] foothold ✓ Listener: $lhost:$lport (Fenster „PHP2SHELL shell“)
      Lab-RCE-Foothold: $(state_get 40 LAB_FOOTHOLD)
      Payloads (manuelle Referenz): $paydir/oneliners.txt
 EOF

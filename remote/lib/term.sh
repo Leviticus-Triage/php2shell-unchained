@@ -27,7 +27,7 @@ term_spawn_jobs() {
         name="${spec%%|*}"; cmd="${spec#*|}"
         if [[ "$name" == "listener" ]]; then
           local title="PHP2SHELL shell ${ENGAGE_LPORT:-}"
-          local runner="cd '$LAB_ROOT' && python3 scripts/engage-listen.py ${ENGAGE_LPORT:-4444} 2>&1 | tee '$logdir/listener.log'; echo; echo '[shell fenster offen]'; exec bash"
+          local runner="cd '$LAB_ROOT' && bash scripts/engage-operator.sh ${ENGAGE_LPORT:-4444} '$ENGAGE_DIR'"
           if command -v gnome-terminal >/dev/null 2>&1; then
             gnome-terminal --title="$title" -- bash -lc "$runner" >/dev/null 2>&1 &
             echo "[shell] Fenster: $title"
@@ -42,8 +42,7 @@ term_spawn_jobs() {
             echo "[shell] kein Desktop-Terminal — Listener im Hintergrund, Log $logdir/$name.log"
           fi
         else
-          ( cd "$LAB_ROOT" && nohup bash -c "$cmd" >"$logdir/$name.log" 2>&1 & echo $! >"$logdir/$name.pid" )
-          echo "[log] $name → $logdir/$name.log"
+          echo "[post-ex] $name bleibt im Shell-Fenster (nach exit: Menü 2–5), nicht als Extra-Prozess"
         fi
       done
       ;;
