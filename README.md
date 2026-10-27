@@ -47,35 +47,49 @@ The lab bundles multiple public research chains (FPM + LFI, mod_php heap, Jackal
 
 ```mermaid
 flowchart TB
-  subgraph host["Operator host"]
-    CLI["vtbw-php2shell-lab / php2shell-unchained"]
-    MCP["Cursor MCP: lab_* tools"]
+  subgraph sgHost ["Operator host"]
+    CLI["lab CLI and menu"]
+    MCP["IDE MCP bridge"]
   end
-
-  subgraph docker["Docker Compose — lab_isolated + lab_egress"]
-    TGT["target: nginx + PHP-FPM"]
-    APA["target-apache: mod_php"]
-    ATK["attacker: PoC + patch_audit.py"]
-    SLV["sliver (profile)"]
-    SNG["singularity-lab (profile)"]
+  subgraph sgDocker ["Compose lab network"]
+    TGT["nginx plus PHP-FPM"]
+    APA["Apache mod_php"]
+    ATK["attacker and patch audit"]
   end
-
-  subgraph external["Optional sidecars"]
-    CF["cloudflared Quick Tunnel"]
-    TOR["Tor gateway SOCKS5 / TransPort"]
+  subgraph sgSide ["Optional sidecars"]
+    CF["Quick Tunnel"]
+    TOR["Tor egress"]
   end
-
-  CLI --> docker
+  CLI --> TGT
   MCP --> CLI
   ATK --> TGT
   ATK --> APA
   CF --> TGT
-  CF --> SLV
-  CF -.->|optional route| TOR
-  ATK -.->|PATCH_AUDIT_PROXY| TOR
+  ATK -.-> TOR
 ```
 
-**Networks:** `lab_isolated` (no direct internet) carries target ↔ attacker traffic; `lab_egress` allows controlled outbound (module fetches, Tor exits). Details: [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md#4-netze-und-dienste).
+**Networks:** `lab_isolated` carries target and attacker traffic with no direct internet. `lab_egress` is the only path for controlled outbound fetches. Details: [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md).
+
+## Operator console
+
+The lab is driven from one ASCII menu. Security admins start at **[8]**. Emulation tracks are **[1]–[7]** and stay inside the compose network.
+
+<p align="center">
+  <img src="docs/assets/operator-menu.png" alt="Main operator menu" width="720">
+</p>
+
+<p align="center">
+  <img src="docs/assets/cli-help.png" alt="CLI help, workarounds first" width="720">
+</p>
+
+| Key | Audience | What it is |
+|-----|----------|------------|
+| **[8]** | Admins, blue team | Guided workaround session, 11 patch and WAF checks, markdown report under `out/workarounds/` |
+| **[h]** | Everyone | Same text as `vtbw-php2shell-lab help` |
+| **[1]** | Lab operators | Bring the FPM target up, `doctor`, then reachability checks |
+| **[d]** | Lab operators | `ps`, logs, `down`, portable export |
+
+Full command reference stays in [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md). A short admin path is [docs/HOW-TO.md](docs/HOW-TO.md).
 
 ---
 
@@ -188,6 +202,7 @@ Reference: [docs/PATCH-BYPASS-AUDIT.md](docs/PATCH-BYPASS-AUDIT.md).
 
 | Document | Language | Content |
 |----------|----------|---------|
+| [docs/HOW-TO.md](docs/HOW-TO.md) | EN | First hour: install, doctor, workarounds, stop |
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | DE | Complete technical manual (commands, compose, env, logs) |
 | [docs/HOWTO-DE.md](docs/HOWTO-DE.md) | DE | Phased workflow 1–10 |
 | [docs/WORKFLOW-KOMPLETT.md](docs/WORKFLOW-KOMPLETT.md) | DE | **Full workflow:** setup → exploit → post-exploit → audit |
