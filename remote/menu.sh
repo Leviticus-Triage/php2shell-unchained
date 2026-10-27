@@ -113,10 +113,10 @@ cmd_run_wizard() {
   local lhost_def; lhost_def="$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oP 'src \K[0-9.]+' || echo '')"
   read -r -p "  Listener-IP (LHOST) [${lhost_def}]: " lhost; lhost="${lhost:-$lhost_def}"
   read -r -p "  Listener-Port [4444]: " lport; lport="${lport:-4444}"
-  read -r -p "  Tor-Egress (Host :9050) für Recon/Audit? [j/N]: " tor
+  read -r -p "  Tor-Egress (Cloudflare über Tor-Exit)? [J/n]: " tor
   read -r -p "  Sliver C2 (compose/host auto)? [J/n]: " c2
   read -r -p "  Reverse-Shell-as-a-Service (lukechilds)? [J/n]: " rs
-  read -r -p "  Cloudflare Tunnel (Listener + Sliver HTTPS)? [j/N]: " tun
+  read -r -p "  Cloudflare Tunnel (Listener + Sliver HTTPS)? [J/n]: " tun
   read -r -p "  Lab-External (Tor+Tunnel web/sliver, nur Lab-IP)? [J/n]: " ext
   read -r -p "  Jackalsyn selftest? [J/n]: " js
   read -r -p "  mod_php + Zer061 PoC (heap exploit.py)? [J/n]: " mp
@@ -127,10 +127,10 @@ cmd_run_wizard() {
   echo "  ── Zusammenfassung ──"
   echo "  Ziel:         $url"
   echo "  LHOST:        $lhost:$lport"
-  echo "  Tor:          $([[ "$tor" =~ ^[jJ] ]] && echo on || echo off)"
+  echo "  Tor:          $([[ "$tor" =~ ^[nN] ]] && echo off || echo on)"
   echo "  Sliver C2:    $([[ "$c2" =~ ^[nN] ]] && echo none || echo sliver)"
   echo "  RAAS:         $([[ "$rs" =~ ^[nN] ]] && echo off || echo on)"
-  echo "  Tunnel:       $([[ "$tun" =~ ^[jJ] ]] && echo on || echo off)"
+  echo "  Tunnel:       $([[ "$tun" =~ ^[nN] ]] && echo off || echo on)"
   echo "  External:     $([[ "$ext" =~ ^[nN] ]] && echo auto || echo on)"
   echo "  Jackalsyn:    $([[ "$js" =~ ^[nN] ]] && echo off || echo auto)"
   echo "  mod_php PoC:  $([[ "$mp" =~ ^[nN] ]] && echo off || echo auto)"
@@ -144,10 +144,10 @@ cmd_run_wizard() {
   export ENGAGE_LHOST="$lhost" ENGAGE_LPORT="$lport" TARGET_URL="$url"
   export ENGAGE_C2=sliver ENGAGE_RS=on ENGAGE_JACKALSYN=auto ENGAGE_SINGULARITY="${sg:-lab}"
   export ENGAGE_FETCH_ALL=on ENGAGE_EXTERNAL=auto ENGAGE_MODPHP=auto
-  [[ "$tor" =~ ^[jJ] ]] && export ENGAGE_TOR=on
+  if [[ "$tor" =~ ^[nN] ]]; then export ENGAGE_TOR=off; else export ENGAGE_TOR=on; fi
   [[ "$c2" =~ ^[nN] ]] && export ENGAGE_C2=none
   [[ "$rs" =~ ^[nN] ]] && export ENGAGE_RS=off
-  [[ "$tun" =~ ^[jJ] ]] && export ENGAGE_TUNNEL=on
+  if [[ "$tun" =~ ^[nN] ]]; then export ENGAGE_TUNNEL=off; else export ENGAGE_TUNNEL=on; fi
   [[ "$ext" =~ ^[nN] ]] && export ENGAGE_EXTERNAL=off
   [[ "$js" =~ ^[nN] ]] && export ENGAGE_JACKALSYN=off
   [[ "$mp" =~ ^[nN] ]] && export ENGAGE_MODPHP=off

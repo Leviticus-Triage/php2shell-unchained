@@ -43,6 +43,9 @@ engage_print_handoff() {
   Server:          $(state_get 10 SERVER_BANNER)
   Vendor-Patch:    $(state_get 20 VENDOR_PATCH) (FAIL = Lab verwundbar)
   FPM UAF:         ${uaf:-?}
+  Tor:             $(state_get 00 ENGAGE_TOR)  (on = Cloudflare-Tunnel über Tor-Exit)
+  Cloudflare Web:  $(state_get 50 EXTERNAL_WEB)
+  Cloudflare C2:   $(state_get 50 EXTERNAL_SLIVER)
   Foothold:        ${fh:-?}   (lab-rce-nc = Shell sollte im listener landen)
   Lab-Foothold:    ${labfh:-?}
   mod_php PoC:     ${modphp:-?} (heap: $(state_get 20 MODPHP_HEAP))

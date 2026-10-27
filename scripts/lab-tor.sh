@@ -10,11 +10,16 @@ cd "$ROOT"
 
 CONTAINER="vtbw-php2shell-tor"
 IMAGE="vtbw-php2shell-tor"
-TOR_NET="php2shell-lab-vtbw_lab_tor"
 TOR_SUBNET="10.213.37.0/24"
 TOR_IP="10.213.37.2"
-EGRESS_NET="php2shell-lab-vtbw_lab_egress"
-ISOLATED_NET="php2shell-lab-vtbw_lab_isolated"
+# shellcheck source=scripts/lib/compose-networks.sh
+source "$ROOT/scripts/lib/compose-networks.sh"
+p2s_require_lab_networks || exit 1
+EGRESS_NET="$P2S_NET_EGRESS"
+ISOLATED_NET="$P2S_NET_ISOLATED"
+# Reuse an existing Tor transit net (subnet 10.213.37.0/24 is unique on the host).
+TOR_NET="$(p2s_lab_tor_net)"
+[[ -z "$TOR_NET" ]] && TOR_NET="${ISOLATED_NET%_lab_isolated}_lab_tor"
 OUT="$ROOT/out/tor"
 mkdir -p "$OUT"
 

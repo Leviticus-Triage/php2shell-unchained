@@ -15,6 +15,7 @@ engage_target_is_lab() {
 engage_apply_lab_defaults() {
   engage_target_is_lab || return 0
   [[ -z "${ENGAGE_TUNNEL+x}" || "${ENGAGE_TUNNEL:-}" == "auto" ]] && export ENGAGE_TUNNEL=on
+  [[ -z "${ENGAGE_TOR+x}" || "${ENGAGE_TOR:-}" == "auto" ]] && export ENGAGE_TOR=on
   if [[ "${ENGAGE_EXTERNAL:-auto}" == "auto" ]]; then
     export ENGAGE_EXTERNAL=on
   fi
@@ -35,7 +36,7 @@ engage_external_bootstrap() {
   local log="$ENGAGE_DIR/logs/50-external.log"
   local tor_arg=""
   [[ "${ENGAGE_TOR:-}" == "on" ]] && tor_arg="--tor"
-  echo "[50] Lab-External (Tunnel web + sliver-http) …" | tee -a "$log"
+  echo "[50] Lab-External (Tor=${ENGAGE_TOR:-off} + Cloudflare web + sliver-http) …" | tee -a "$log"
   local ext_rc=0
   if [[ -n "$tor_arg" ]]; then
     bash "$LAB_ROOT/scripts/lab-external.sh" up --tor >>"$log" 2>&1 || ext_rc=$?
@@ -50,7 +51,7 @@ engage_external_bootstrap() {
       state_set 50 EXTERNAL_WEB "${EXTERNAL_WEB_URL:-}"
       state_set 50 EXTERNAL_SLIVER "${EXTERNAL_SLIVER_URL:-}"
     fi
-    echo "[50] external ✓ trycloudflare aktiv (siehe $log)"
+    echo "[50] external ✓ TOR=${EXTERNAL_TOR:-0} WEB=${EXTERNAL_WEB_URL:-?} SLIVER=${EXTERNAL_SLIVER_URL:-?}"
   else
     state_set 50 EXTERNAL "failed"
     echo "[50] external ✗ fehlgeschlagen — Log: $log" >&2

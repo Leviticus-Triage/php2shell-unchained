@@ -31,6 +31,7 @@ engage_export_lab_full_load() {
   export ENGAGE_FETCH_ALL=on
   export ENGAGE_EXTERNAL=on
   export ENGAGE_TUNNEL=on
+  export ENGAGE_TOR=on
   export ENGAGE_C2=sliver
   export ENGAGE_RS=on
   export ENGAGE_JACKALSYN=auto
