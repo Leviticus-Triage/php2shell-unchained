@@ -10,6 +10,7 @@ source "$ROOT/remote/lib/scope.sh"
 source "$ROOT/remote/lib/term.sh"
 source "$ROOT/remote/lib/state.sh"
 source "$ROOT/remote/lib/engage-lab-preset.sh"
+source "$ROOT/remote/lib/engage-handoff.sh"
 ORCH="$ROOT/remote/orchestrate.sh"
 
 hdr() {
@@ -22,6 +23,9 @@ BANNER
   local n=0
   [[ -f "$(scope_file)" ]] && n=$(grep -cv '^\s*\(#\|$\)' "$(scope_file)" || true)
   echo "  Scope-Einträge: $n · Terminal-Backend: $(term_backend) · CONFIRM_ROE: ${CONFIRM_ROE:-<nicht gesetzt>}"
+  if [[ -f "$ROOT/out/engage/.last-session" ]]; then
+    echo "  Letzte Session: $(cat "$ROOT/out/engage/.last-session") → Menü [n] Nächste Schritte"
+  fi
   echo
 }
 
@@ -29,7 +33,12 @@ pick_session() {
   local base="$ROOT/out/engage" i=1
   [[ ! -d "$base" ]] && { echo "Keine Sessions."; return 1; }
   local -a sids=()
-  for d in "$base"/*/; do sids+=("$(basename "$d")"); done
+  for d in "$base"/*/; do
+    local s; s="$(basename "$d")"
+    [[ "$s" == "_kits" ]] && continue
+    [[ -f "$d/state/00.env.TARGET_URL" ]] || continue
+    sids+=("$s")
+  done
   [[ ${#sids[@]} -eq 0 ]] && { echo "Keine Sessions."; return 1; }
   echo "  Sessions:"
   for s in "${sids[@]}"; do printf "    [%d] %s\n" "$i" "$s"; i=$((i+1)); done
@@ -154,9 +163,23 @@ cmd_run_wizard() {
 
 cmd_resume() {
   hdr; local sid
-  sid="$(pick_session)" || { sleep 1; return 0; }
-  export CONFIRM_ROE="${CONFIRM_ROE:-I-AM-AUTHORIZED}"
-  bash "$ORCH" resume "$sid"
+  sid="$(pick_session)" || { echo "  Keine gültige Session (nur Ordner mit state/00.env.TARGET_URL)."; sleep 2; return 0; }
+  export CONFIRM_ROE=I-AM-AUTHORIZED
+  bash "$ORCH" resume "$sid" || { echo "  Resume fehlgeschlagen (Session $sid)."; sleep 2; }
+  read -r -p "  ENTER für Menü… " _
+}
+
+cmd_next_steps() {
+  hdr
+  local sid
+  if [[ -f "$ROOT/out/engage/.last-session" ]]; then
+    sid="$(cat "$ROOT/out/engage/.last-session")"
+    echo "  Letzte Session: $sid"
+  else
+    sid="$(pick_session)" || { sleep 1; return 0; }
+  fi
+  export ENGAGE_SID="$sid"
+  engage_print_handoff
   read -r -p "  ENTER für Menü… " _
 }
 
@@ -164,7 +187,8 @@ cmd_status() { hdr; bash "$ORCH" status; echo; read -r -p "  ENTER für Menü…
 
 cmd_listeners() {
   hdr; local sid
-  sid="$(pick_session)" || { sleep 1; return 0; }
+  sid="$(pick_session)" || { echo "  Keine Session mit Listener-Phase."; sleep 1; return 0; }
+  export CONFIRM_ROE=I-AM-AUTHORIZED
   bash "$ORCH" listeners "$sid"
   read -r -p "  ENTER für Menü… " _
 }
@@ -335,8 +359,17 @@ cmd_external_ops() {
 SUB
   read -r -p "  Auswahl: " c
   case "$c" in
-    1) bash "$ROOT/scripts/lab-external.sh" up ;;
-    2) bash "$ROOT/scripts/lab-external.sh" up --tor ;;
+    1)
+      if ! bash "$ROOT/scripts/lab-external.sh" up; then
+        echo "  FEHLER — Log: $ROOT/out/external/ops.log und out/tunnel/ops.log"
+        echo "  Oft: vtbw-php2shell-lab up (FPM-Target) fehlt oder Netzwerkname geändert."
+      fi
+      ;;
+    2)
+      if ! bash "$ROOT/scripts/lab-external.sh" up --tor; then
+        echo "  FEHLER — siehe out/external/ops.log"
+      fi
+      ;;
     3) bash "$ROOT/scripts/lab-external.sh" status ;;
     4) [[ -f "$ROOT/out/external/state.env" ]] && cat "$ROOT/out/external/state.env" || echo "kein state" ;;
     5) bash "$ROOT/scripts/lab-external.sh" down ;;
@@ -351,7 +384,8 @@ main_loop() {
     [1] Scope verwalten          scope-authorized.txt (RoE) anzeigen/eintragen
     [2] Engagement STARTEN       Wizard: URL · LHOST · Tor · Sliver · RAAS · Tunnel
     [l] Lab-Vollkette + LOAD       172.21.0.2 · mod_php :19288 · Sliver · Singularity LOAD
-    [3] Resume                   unterbrochene Session fortsetzen
+    [n] Nächste Schritte           tmux/Shells · was erreicht · Payloads (letzte Session)
+    [3] Resume                   unterbrochene Session fortsetzen (CONFIRM_ROE wird gesetzt)
     [4] Status                   alle Sessions + Phasen-Fortschritt
     [5] Listener neu spawnen     Fenster für bestehende Session erneut öffnen
     [6] Report ansehen           REPORT.md der Session
@@ -369,6 +403,7 @@ MENU
       1) cmd_scope ;;
       2) cmd_run_wizard ;;
       l|L) cmd_lab_full_load ;;
+      n|N) cmd_next_steps ;;
       3) cmd_resume ;;
       4) cmd_status ;;
       5) cmd_listeners ;;

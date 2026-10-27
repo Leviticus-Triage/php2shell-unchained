@@ -13,6 +13,7 @@ source "$ROOT/remote/lib/state.sh"
 source "$ROOT/remote/lib/curl.sh"
 source "$ROOT/remote/lib/kits.sh"
 source "$ROOT/remote/lib/lab-bridge.sh"
+source "$ROOT/remote/lib/engage-handoff.sh"
 source "$ROOT/remote/lib/modphp-engage.sh"
 source "$ROOT/remote/lib/rshell.sh"
 source "$ROOT/remote/lib/sliver-host.sh"
@@ -73,6 +74,7 @@ cmd_run() {
   local url="${1:?Ziel-URL fehlt (siehe: engage help)}"
   export TARGET_URL="$url"
   export ENGAGE_SID="${ENGAGE_SID:-$(date -u +%Y%m%d-%H%M%S)}"
+  engage_apply_lab_defaults
   export ENGAGE_RS="${ENGAGE_RS:-on}"
   export ENGAGE_C2="${ENGAGE_C2:-sliver}"
   export ENGAGE_SINGULARITY="${ENGAGE_SINGULARITY:-lab}"
@@ -99,14 +101,19 @@ cmd_run() {
   phase_report
   echo
   echo "Fertig. Report: $ENGAGE_DIR/REPORT.md"
+  engage_print_handoff
+  printf '%s\n' "$ENGAGE_SID" >"$LAB_ROOT/out/engage/.last-session"
 }
 
 cmd_resume() {
   local sid="${1:?Session-Id fehlt}"
+  [[ "$sid" == "_kits" ]] && { echo "Keine Engagement-Session: _kits" >&2; exit 1; }
+  export CONFIRM_ROE="${CONFIRM_ROE:-I-AM-AUTHORIZED}"
   export ENGAGE_SID="$sid"
   state_init "$sid"
   [[ ! -f "$ENGAGE_STATE/00.env.TARGET_URL" ]] && { echo "Keine Session $sid (kein Scope-State)." >&2; exit 1; }
   export TARGET_URL; TARGET_URL="$(state_get 00 TARGET_URL)"
+  engage_apply_lab_defaults
   echo "Resume $sid → $TARGET_URL"
   state_resume_report
   state_hydrate
@@ -116,6 +123,8 @@ cmd_resume() {
   phase_foothold; state_hydrate
   phase_postex; state_hydrate
   phase_report
+  engage_print_handoff
+  printf '%s\n' "$ENGAGE_SID" >"$LAB_ROOT/out/engage/.last-session"
 }
 
 cmd_listeners() {
@@ -140,6 +149,8 @@ cmd_status() {
   local d
   for d in "$base"/*/; do
     local sid; sid="$(basename "$d")"
+    [[ "$sid" == "_kits" ]] && continue
+    [[ ! -f "$d/state/00.env.TARGET_URL" ]] && continue
     [[ -n "${1:-}" && "$sid" != "$1" ]] && continue
     echo "── $sid"
     if [[ -f "$d/state/00.env.TARGET_URL" ]]; then

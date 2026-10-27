@@ -30,6 +30,7 @@ phase_postex() {
   singularity_engage_jobs jobs "$ENGAGE_DIR"
   state_set 50 SINGULARITY "${ENGAGE_SINGULARITY:-lab}"
 
+  engage_external_bootstrap
   external_engage_jobs jobs
 
   if [[ ${#jobs[@]} -gt 0 ]]; then

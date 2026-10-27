@@ -10,10 +10,12 @@ ACTION="${1:-help}"
 cd "$ROOT"
 OUT="$ROOT/out/tunnel"
 mkdir -p "$OUT"
-
-EGRESS_NET="php2shell-lab-vtbw_lab_egress"
-ISOLATED_NET="php2shell-lab-vtbw_lab_isolated"
-TOR_NET="php2shell-lab-vtbw_lab_tor"
+# shellcheck source=scripts/lib/compose-networks.sh
+source "$ROOT/scripts/lib/compose-networks.sh"
+p2s_require_lab_networks || exit 1
+ISOLATED_NET="$P2S_NET_ISOLATED"
+EGRESS_NET="$P2S_NET_EGRESS"
+TOR_NET="${P2S_NET_TOR:-}"
 TOR_GW="10.213.37.2"
 SIDECAR_IMAGE="vtbw-php2shell-tunnel-sidecar"
 
@@ -80,6 +82,10 @@ cmd_up() {
   local tls_flag=""
   [[ "$target_url" == https://* ]] && tls_flag="--no-tls-verify"
   if [[ "$tor" == "1" ]]; then
+    if [[ -z "$TOR_NET" ]]; then
+      echo "FEHLER: Tor-Netz (*_lab_tor) nicht gefunden — zuerst: tor up" >&2
+      exit 1
+    fi
     if ! docker ps --format '{{.Names}}' | grep -qx vtbw-php2shell-tor; then
       echo "FEHLER: Tor läuft nicht — zuerst: tor up" >&2
       exit 1
