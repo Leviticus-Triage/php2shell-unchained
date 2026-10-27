@@ -106,11 +106,11 @@ Nothing new is invented here — the mode **orchestrates** the lab's public comp
 | Zer061 | yes if fetched | phase 30; `ZER061_REPO` if upstream 404 |
 | Jackalsyn | yes | phase 30 `--selftest`; `--lab` only with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
 | Reverse-shell-as-a-service (lukechilds) | **yes, default on** | phase 40: clone + payload fetch + extra `nc` window |
-| Sliver C2 | opt-in `ENGAGE_C2=sliver` | phase 50 **host** binaries, not compose |
-| Tor SOCKS5 | opt-in `ENGAGE_TOR=on` | host `:9050`; proof job in phase 50 |
-| Cloudflare Quick Tunnel | opt-in `ENGAGE_TUNNEL=on` | phase 40 host `cloudflared` / docker `--network host` |
-| Singularity LKM | detect-only | phase 50 playbook — **never insmod** from engage |
-| `lab-external.sh` compose | lab-only | isolated net; engage uses host tunnel/Tor instead |
+| Sliver C2 | **default on** (`ENGAGE_C2=sliver`) | phase 50: compose if `:31337`/container busy, else host operator + mTLS/HTTPS + console |
+| Tor SOCKS5 | `ENGAGE_TOR=on` | host `:9050`; proof job in phase 50 |
+| Cloudflare Quick Tunnel | `ENGAGE_TUNNEL=on` | phase 40 listener tunnel; + sliver-http when C2+sliver |
+| Singularity LKM | **default `lab`** | status, detect, `container-up`, shell; `full` needs `CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK` for build |
+| `lab-external.sh` | `ENGAGE_EXTERNAL=auto` on lab IPs | phase 50 spawns `external up` (tor + web + sliver tunnels) |
 
 Check: `vtbw-php2shell-lab engage kits` or menu `[e]` → `[8]`.
 
