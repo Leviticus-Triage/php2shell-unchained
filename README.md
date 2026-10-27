@@ -209,7 +209,8 @@ CONFIRM_ROE=I-AM-AUTHORIZED ENGAGE_LHOST=10.20.30.40 \
 | Tunnel | `ENGAGE_TUNNEL=on` — listener + optional Sliver HTTPS tunnel |
 | External | `ENGAGE_EXTERNAL=auto` on lab IPs — full `external up` stack |
 | Jackalsyn | selftest in phase 30; `--lab` with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
-| Singularity | `ENGAGE_SINGULARITY=lab` (default): status, detect, container-up/shell |
+| Singularity | `lab` (default) · `load`/`full` = container-build/LKM mit `CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK` |
+| mod_php | `ENGAGE_MODPHP=auto`: Fingerprint `zer061-heap` + `exploit.py` (+ optional Lab-Apache `:19288`) |
 | Gate | `scope-authorized.txt` **plus** `CONFIRM_ROE=I-AM-AUTHORIZED` |
 
 Docs: [remote/README.md](remote/README.md) · profile template: [remote/engagement.yaml.example](remote/engagement.yaml.example)

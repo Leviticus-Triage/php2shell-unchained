@@ -94,7 +94,8 @@ Artifacts: `out/engage/<sid>/` — `ENGAGEMENT.md`, `REPORT.md`, `logs/` per pha
 | Reverse-shell-as-a-service | [lukechilds/reverse-shell](https://github.com/lukechilds/reverse-shell) + https://reverse-shell.sh |
 | Tor egress | host `tor.service` SOCKS5; lab `lab-tor.sh` sidecar only as fallback |
 | Quick Tunnel | host `cloudflared` or official Docker image on `--network host` |
-| Singularity | `fetch-singularity` + detect checklist — no kernel module load |
+| Singularity | `detect` / `lab` / **`load`** (container-build + CONFIRM) / `full` |
+| mod_php PoC | `ENGAGE_MODPHP=auto` → `zer061-heap` audit + `exploit.py -u` (+ Lab `:19288` wenn RFC1918) |
 
 Nothing new is invented here — the mode **orchestrates** the lab's public components against a scoped target and keeps evidence in one session directory.
 

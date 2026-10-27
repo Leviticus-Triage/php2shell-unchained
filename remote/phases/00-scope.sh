@@ -13,6 +13,7 @@ phase_scope() {
   state_set 00 ENGAGE_EXTERNAL "${ENGAGE_EXTERNAL:-auto}"
   state_set 00 ENGAGE_JACKALSYN "${ENGAGE_JACKALSYN:-auto}"
   state_set 00 ENGAGE_SINGULARITY "${ENGAGE_SINGULARITY:-lab}"
+  state_set 00 ENGAGE_MODPHP "${ENGAGE_MODPHP:-auto}"
   state_mark 00
   {
     echo "# Engagement $ENGAGE_SID"

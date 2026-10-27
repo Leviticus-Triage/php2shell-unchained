@@ -13,6 +13,7 @@ source "$ROOT/remote/lib/state.sh"
 source "$ROOT/remote/lib/curl.sh"
 source "$ROOT/remote/lib/kits.sh"
 source "$ROOT/remote/lib/lab-bridge.sh"
+source "$ROOT/remote/lib/modphp-engage.sh"
 source "$ROOT/remote/lib/rshell.sh"
 source "$ROOT/remote/lib/sliver-host.sh"
 source "$ROOT/remote/lib/singularity-engage.sh"
@@ -48,9 +49,12 @@ Optionen (Env):
   ENGAGE_EXTERNAL=auto|on|off   Lab-Ziel: tor+tunnel web/sliver (compose)
   ENGAGE_JACKALSYN=auto|off
   ENGAGE_FCGI_HOST / ENGAGE_DTOR   Jackalsyn --lab
-  ENGAGE_SINGULARITY=lab|detect|full|off   status+detect+container (full+CONFIRM → build)
-  CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK   nur mit ENGAGE_SINGULARITY=full
-  ENGAGE_FETCH_ALL=on     alle fetch-* beim Start
+  ENGAGE_SINGULARITY=lab|detect|load|full|off   load=container-build/LKM (CONFIRM)
+  CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK   für load/full
+  ENGAGE_MODPHP=auto|on|off   FPM + mod_php Zer061 PoC (Default: auto)
+  ENGAGE_MODPHP_LAB=auto|off  Lab-IP: docker apache-up + :19288 PoC
+  ENGAGE_APACHE_URL=…         mod_php Ziel (Default: Lab :19288 oder TARGET_URL)
+  ENGAGE_FETCH_ALL=on
   ENGAGE_ZER061=auto|off
   ENGAGE_LHOST=…          Operator-IP für Rückkanal (Pflicht ab Phase 40)
   ENGAGE_LPORT=4444
@@ -74,6 +78,8 @@ cmd_run() {
   export ENGAGE_SINGULARITY="${ENGAGE_SINGULARITY:-lab}"
   export ENGAGE_FETCH_ALL="${ENGAGE_FETCH_ALL:-on}"
   export ENGAGE_EXTERNAL="${ENGAGE_EXTERNAL:-auto}"
+  export ENGAGE_MODPHP="${ENGAGE_MODPHP:-auto}"
+  export ENGAGE_MODPHP_LAB="${ENGAGE_MODPHP_LAB:-auto}"
   state_init "$ENGAGE_SID"
   echo "════════════════════════════════════════════════"
   echo " engage · Session $ENGAGE_SID · Ziel $TARGET_URL"
