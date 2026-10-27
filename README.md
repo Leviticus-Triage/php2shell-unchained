@@ -82,6 +82,10 @@ The lab is driven from one ASCII menu. Security admins start at **[8]**. Emulati
   <img src="docs/assets/cli-help.png" alt="CLI help, workarounds first" width="720">
 </p>
 
+<p align="center">
+  <img src="docs/assets/audit-menu.png" alt="Menu 8, patch and WAF audit" width="720">
+</p>
+
 | Key | Audience | What it is |
 |-----|----------|------------|
 | **[8]** | Admins, blue team | Guided workaround session, 11 patch and WAF checks, markdown report under `out/workarounds/` |
