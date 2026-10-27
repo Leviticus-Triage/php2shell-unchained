@@ -53,15 +53,20 @@ engage_print_handoff() {
   External:        ${ext:-?}
 
 ── Jetzt: Shells / Terminals ──
+  WICHTIG: Du bist NICHT in tmux. Erst attachieren, dann Fenster wechseln:
+
   1) REVERSE-SHELL (wenn Lab-Foothold ok):
        tmux attach -t $session
-       → Fenster: listener  (www-data\$ Prompt)
-  2) Alle Jobs (Sliver/Singularity/Logs):
+       → dann: Fenster **listener** öffnen (Ctrl+b 0 oder Ctrl+b w → listener)
+       → dort läuft nc und fängt die Shell ab.
+
+  2) Schnell direkt in Fenster springen (von außerhalb):
+       tmux switch-client -t $session \; select-window -t $session:listener
+       tmux switch-client -t $session \; select-window -t $session:sliver-console
+       tmux switch-client -t $session \; select-window -t $session:singularity-load
+
+  3) Alle Fenster anzeigen:
        tmux list-windows -t $session
-  3) Sliver-Konsole:
-       tmux select-window -t $session:sliver-console
-  4) Singularity LOAD:
-       tmux select-window -t $session:singularity-load
 
 ── Manuelle Payloads (nur wenn auto-Foothold fehlschlug) ──
 EOF

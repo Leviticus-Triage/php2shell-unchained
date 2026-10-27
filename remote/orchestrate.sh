@@ -136,10 +136,10 @@ cmd_listeners() {
   rsport="$(state_get 40 RS_PORT)"
   [[ -z "$lport" ]] && { echo "Keine Listener-Phase in $sid." >&2; exit 1; }
   local jobs=(
-    "listener|nc -lvnp $lport"
+    "listener|python3 scripts/engage-listen.py $lport"
     "logs|tail -f '$ENGAGE_DIR/logs/30-exploit.log'"
   )
-  [[ -n "$rsport" ]] && jobs+=("rs-raas-$rsport|nc -lvnp $rsport")
+  [[ -n "$rsport" ]] && jobs+=("rs-raas-$rsport|python3 scripts/engage-listen.py $rsport")
   term_spawn_jobs "p2s-$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
   echo "Listener erneut gestartet (Port $lport${rsport:+ + RAAS $rsport})."
 }
