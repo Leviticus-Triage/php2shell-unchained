@@ -1,5 +1,7 @@
 # shellcheck shell=bash
-# Resolve Docker Compose network names (project folder varies: php2shell-unchained, p2s, …).
+# Resolve Docker Compose network names. The project can be started with
+# COMPOSE_PROJECT_NAME (e.g. p2s) so the live target network may differ from
+# the default <folder>_lab_isolated.
 
 p2s_anchor_container() {
   printf '%s' "${P2S_ANCHOR_CONTAINER:-vtbw-php2shell-target}"
@@ -39,4 +41,9 @@ p2s_require_lab_networks() {
   export P2S_NET_ISOLATED="$iso"
   export P2S_NET_EGRESS="$egress"
   export P2S_NET_TOR="$(p2s_lab_tor_net)"
+}
+
+# Network the FPM target actually lives on (for `docker compose run --network`).
+p2s_target_network() {
+  p2s_find_network "lab_isolated"
 }

