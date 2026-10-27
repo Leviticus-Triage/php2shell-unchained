@@ -8,12 +8,8 @@
 term_backend() {
   local pref="${ENGAGE_TERMINAL:-auto}"
   if [[ "$pref" != "auto" ]]; then printf '%s' "$pref"; return; fi
-  if command -v tmux >/dev/null 2>&1; then printf 'tmux'; return; fi
-  if command -v gnome-terminal >/dev/null 2>&1; then printf 'gnome'; return; fi
-  if command -v konsole >/dev/null 2>&1; then printf 'konsole'; return; fi
-  if command -v kitty >/dev/null 2>&1; then printf 'kitty'; return; fi
-  if command -v xterm >/dev/null 2>&1; then printf 'xterm'; return; fi
-  printf 'none'
+  # One shell window. tmux only when ENGAGE_TERMINAL=tmux.
+  printf 'desk'
 }
 
 # term_spawn_jobs <session-name> <logdir> <name=cmd> [name=cmd …]
@@ -25,6 +21,32 @@ term_spawn_jobs() {
   echo "[term] Backend: $backend · Session: $session · $# Job(s)"
 
   case "$backend" in
+    desk)
+      local spec name cmd
+      for spec in "$@"; do
+        name="${spec%%|*}"; cmd="${spec#*|}"
+        if [[ "$name" == "listener" ]]; then
+          local title="PHP2SHELL shell ${ENGAGE_LPORT:-}"
+          local runner="cd '$LAB_ROOT' && python3 scripts/engage-listen.py ${ENGAGE_LPORT:-4444} 2>&1 | tee '$logdir/listener.log'; echo; echo '[shell fenster offen]'; exec bash"
+          if command -v gnome-terminal >/dev/null 2>&1; then
+            gnome-terminal --title="$title" -- bash -lc "$runner" >/dev/null 2>&1 &
+            echo "[shell] Fenster: $title"
+          elif command -v konsole >/dev/null 2>&1; then
+            konsole --new-tab -p tabtitle="$title" -e bash -lc "$runner" >/dev/null 2>&1 &
+            echo "[shell] Fenster: $title (konsole)"
+          elif command -v xterm >/dev/null 2>&1; then
+            xterm -T "$title" -e bash -lc "$runner" >/dev/null 2>&1 &
+            echo "[shell] Fenster: $title (xterm)"
+          else
+            ( cd "$LAB_ROOT" && nohup bash -c "$cmd" >"$logdir/$name.log" 2>&1 & echo $! >"$logdir/$name.pid" )
+            echo "[shell] kein Desktop-Terminal — Listener im Hintergrund, Log $logdir/$name.log"
+          fi
+        else
+          ( cd "$LAB_ROOT" && nohup bash -c "$cmd" >"$logdir/$name.log" 2>&1 & echo $! >"$logdir/$name.pid" )
+          echo "[log] $name → $logdir/$name.log"
+        fi
+      done
+      ;;
     tmux)
       # Session nur anlegen, wenn sie nicht existiert — sonst laufende
       # Listener-Fenster (z.B. Phase 40) bei Post-Ex (Phase 50) erhalten.

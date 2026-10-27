@@ -55,12 +55,11 @@ engage_print_handoff() {
   Singularity:     ${sing:-?} · LOAD: ${load:-n/a}
   External:        ${ext:-?}
 
-── Shell im Listener ──
+── Shell ──
   Status: ${labfh:-?}
-  "sessions should be nested" heißt: du bist SCHON in tmux. Nicht nochmal attach.
-  Fenster wechseln: Ctrl+b, dann w, dann listener.
-  Nur aus einer normalen Shell (Prompt ohne tmux):
-       tmux attach -t $session
+  Es gibt kein tmux. Ein Fenster „PHP2SHELL shell“ wurde geöffnet.
+  Dort tippen: id
+  Sliver, Tor, Singularity und Tunnel stehen nur in den Logs, nicht in Extra-Fenstern.
 
 ── Manuelle Payloads (nur wenn auto-Foothold fehlschlug) ──
 EOF
