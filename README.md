@@ -199,12 +199,16 @@ CONFIRM_ROE=I-AM-AUTHORIZED ENGAGE_LHOST=10.20.30.40 \
 
 | Property | Behaviour |
 |----------|-----------|
-| Phases | 00 scope → 10 recon → 20 fingerprint → 30 exploit → 40 foothold → 50 post-ex → 60 report |
+| Phases | 00 scope+kits → 10 recon → 20 fingerprint → 30 exploit → 40 foothold → 50 post-ex → 60 report |
 | Incremental | Each phase idempotent; `engage resume <sid>` continues |
 | Chained | Later phases hydrate earlier results (banner → exploit choice, listener → post-ex) |
 | Multi-terminal | Listeners / C2 consoles spawn automatically (tmux panes, gnome-terminal tabs, or nohup) |
-| Tor | `ENGAGE_TOR=on` (explicit opt-in, never default) |
-| C2 | `ENGAGE_C2=sliver` profile |
+| Tor | `ENGAGE_TOR=on` — Host `tor.service` SOCKS5 `:9050` (no Docker sidecar required) |
+| RAAS | lukechilds `reverse-shell.sh` — Default **on** (`ENGAGE_RS=off` to skip) |
+| C2 | `ENGAGE_C2=sliver` — **host** binaries (`fetch-sliver`), not compose |
+| Tunnel | `ENGAGE_TUNNEL=on` — cloudflared Quick Tunnel in front of the listener |
+| Jackalsyn | selftest in phase 30; `--lab` only with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
+| Singularity | `detect` playbook (default) — **never** `insmod` from engage |
 | Gate | `scope-authorized.txt` **plus** `CONFIRM_ROE=I-AM-AUTHORIZED` |
 
 Docs: [remote/README.md](remote/README.md) · profile template: [remote/engagement.yaml.example](remote/engagement.yaml.example)

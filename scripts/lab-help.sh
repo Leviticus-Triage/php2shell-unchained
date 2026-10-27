@@ -55,9 +55,12 @@ Authorized assessment (eigene echte Hosts, RoE-Gate)
   Gate: scope-authorized.txt (gitignored) — docs/AUTHORIZED-ASSESSMENT.md
 
 Remote engagement (Vollkette gegen autorisierte Produktivsysteme)
-  engage run <url> | resume | status | listeners
+  engage run <url> | resume | status | listeners | kits
   recon→fingerprint→exploit→foothold→post-ex→report, inkrementell/resume
-  Terminal-Spawns: Listener/C2/Console je eigenes Fenster (tmux/gnome/none)
+  Kits in der Kette: FPM-PoC, patch_audit (host), Zer061, Jackalsyn,
+    lukechilds RAAS (Default on), Sliver-host, Tor :9050, Quick Tunnel,
+    Singularity detect-only (kein insmod)
+  Terminal-Spawns: Listener/C2/RAAS/Tunnel je eigenes Fenster (tmux/gnome/none)
   Pflicht: scope-authorized.txt + CONFIRM_ROE=I-AM-AUTHORIZED — remote/README.md
 
 Multi-Terminal (nur isoliertes Lab)

@@ -1,6 +1,5 @@
 # shellcheck shell=bash
-# Phase 60 — report: merge ENGAGEMENT.md + per-phase signals into a markdown
-# evidence file the customer/team can archive.
+# Phase 60 — report: merge ENGAGEMENT.md + per-phase signals + kit inventory.
 phase_report() {
   state_mark 60
   local r="$ENGAGE_DIR/REPORT.md"
@@ -15,11 +14,24 @@ phase_report() {
     echo "- Vendor-Patch: $(state_get 20 VENDOR_PATCH)"
     echo "- UAF reachable: $(state_get 30 UAF_REACHABLE)"
     echo "- Foothold: $(state_get 30 FOOTHOLD)"
+    echo "- Zer061: $(state_get 30 ZER061)"
+    echo "- Jackalsyn: $(state_get 30 JACKALSYN)"
     echo "- Listener: $(state_get 40 LISTEN_HOST):$(state_get 40 LISTEN_PORT)"
+    echo "- RAAS payload: $(state_get 40 RS_PAYLOAD)"
+    echo "- Tunnel: $(state_get 40 TUNNEL)"
     echo "- C2-Profil: $(state_get 50 C2_PROFILE)"
+    echo "- Sliver: $(state_get 50 SLIVER)"
+    echo "- Singularity: $(state_get 50 SINGULARITY)"
+    echo
+    echo "## Unterprojekte (Start-Inventar)"
+    if [[ -f "$ENGAGE_DIR/logs/00-kits.log" ]]; then
+      echo '```'
+      cat "$ENGAGE_DIR/logs/00-kits.log"
+      echo '```'
+    fi
     echo
     echo "## Artefakte"
-    ls -1 "$ENGAGE_DIR/logs" | sed 's/^/- logs\//'
+    find "$ENGAGE_DIR" -maxdepth 2 -type f | sed "s#^$ENGAGE_DIR/#- #"
   } > "$r"
   echo "[60] report ✓ $r"
 }

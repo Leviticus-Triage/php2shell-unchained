@@ -16,15 +16,14 @@ No scope entry → exit 3 before the first packet. No confirmation → exit 4 be
 ## Phase chain (incremental + resume)
 
 ```text
-00 scope ──► 10 recon ──► 20 fingerprint ──► 30 exploit
-      │           │              │                 │
-      │           │              │                 ▼
-      │           │              │          40 foothold (listener terminal)
-      │           │              │                 │
-      │           │              │                 ▼
-      │           │              │          50 post-ex (C2 / console terminals)
-      │           │              │                 │
-      ▼           ▼              ▼                 ▼
+00 scope+kits ──► 10 recon ──► 20 fingerprint ──► 30 exploit
+      │                │              │                 │
+      │                │              │                 ▼
+      │                │              │          40 foothold (nc + RAAS + tunnel)
+      │                │              │                 │
+      │                │              │                 ▼
+      │                │              │          50 post-ex (Sliver / Tor / detect)
+      ▼                ▼              ▼                 ▼
               60 report  ◄── state envs chain every phase together
 ```
 
@@ -49,7 +48,7 @@ Override: `ENGAGE_TERMINAL=tmux|gnome|none`.
 
 Main menu key **[e]** opens the engagement console — scope management, run
 wizard, resume, status, listener respawn, report viewer, reverse-shell
-variants. Same actions as the CLI, guided.
+RAAS, kit inventory. Same actions as the CLI, guided.
 
 ![menu](../docs/assets/remote-menu.png)
 
@@ -66,9 +65,13 @@ CONFIRM_ROE=I-AM-AUTHORIZED \
 ENGAGE_LHOST=10.20.30.40 \
 vtbw-php2shell-lab engage run 'https://staging-php.customer-internal.example/index.php'
 
-# 3. Optional profiles
-ENGAGE_TOR=on           # recon/probes via local Tor (127.0.0.1:9050)
-ENGAGE_C2=sliver        # post-ex profile with Sliver terminals
+# 3. Optional profiles (RAAS is on by default)
+ENGAGE_TOR=on           # recon/audit via host Tor (127.0.0.1:9050)
+ENGAGE_C2=sliver        # host Sliver server+console windows
+ENGAGE_TUNNEL=on        # Quick Tunnel in front of the nc listener
+ENGAGE_RS=off           # disable lukechilds RAAS extra listener
+ENGAGE_SINGULARITY=off  # skip detect playbook
+vtbw-php2shell-lab engage kits   # inventory: present vs missing
 
 # 4. Later
 vtbw-php2shell-lab engage resume 20261102-090015
@@ -83,13 +86,33 @@ Artifacts: `out/engage/<sid>/` — `ENGAGEMENT.md`, `REPORT.md`, `logs/` per pha
 | Component | Source |
 |-----------|--------|
 | FPM PoC chain | `attacker/scripts/php2shell_poc.py` (public research, same as lab) |
-| mod_php kit | Zer061 bundle via `fetch-zer061` (public PoC) |
-| Fingerprint probes | `patch_audit.py` non-destructive scenarios |
-| C2 profile | BishopFox Sliver (public; `fetch-sliver`) |
-| Reverse-channel variants | lukechilds/reverse-shell slot |
-| Tor egress | existing `lab-tor.sh` sidecar |
+| mod_php kit | Zer061 bundle via `fetch-zer061` → `third_party/zer061-php2shell/exploit.py` |
+| Fingerprint / WAF | `attacker/scripts/patch_audit.py` **on the host** (not the Docker attacker) |
+| Jackalsyn | `fetch-jackalsyn` → `--selftest`; FCGI `--lab` only when RoE exposes FCGI |
+| C2 profile | BishopFox Sliver host binaries (`fetch-sliver`) |
+| Reverse-shell-as-a-service | [lukechilds/reverse-shell](https://github.com/lukechilds/reverse-shell) + https://reverse-shell.sh |
+| Tor egress | host `tor.service` SOCKS5; lab `lab-tor.sh` sidecar only as fallback |
+| Quick Tunnel | host `cloudflared` or official Docker image on `--network host` |
+| Singularity | `fetch-singularity` + detect checklist — no kernel module load |
 
 Nothing new is invented here — the mode **orchestrates** the lab's public components against a scoped target and keeps evidence in one session directory.
+
+### Wired into `engage` vs lab-only
+
+| Subproject | In `engage`? | How |
+|------------|--------------|-----|
+| FPM PoC | yes | phase 30 `-t/-p` |
+| Patch-Audit | yes | phases 20+30 **host python** (no attacker container) |
+| Zer061 | yes if fetched | phase 30; `ZER061_REPO` if upstream 404 |
+| Jackalsyn | yes | phase 30 `--selftest`; `--lab` only with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
+| Reverse-shell-as-a-service (lukechilds) | **yes, default on** | phase 40: clone + payload fetch + extra `nc` window |
+| Sliver C2 | opt-in `ENGAGE_C2=sliver` | phase 50 **host** binaries, not compose |
+| Tor SOCKS5 | opt-in `ENGAGE_TOR=on` | host `:9050`; proof job in phase 50 |
+| Cloudflare Quick Tunnel | opt-in `ENGAGE_TUNNEL=on` | phase 40 host `cloudflared` / docker `--network host` |
+| Singularity LKM | detect-only | phase 50 playbook — **never insmod** from engage |
+| `lab-external.sh` compose | lab-only | isolated net; engage uses host tunnel/Tor instead |
+
+Check: `vtbw-php2shell-lab engage kits` or menu `[e]` → `[8]`.
 
 ## Operator checklist (production window)
 

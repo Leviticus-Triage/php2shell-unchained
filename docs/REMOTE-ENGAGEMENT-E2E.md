@@ -77,7 +77,19 @@ itself was verified separately on the host:
 ```
 
 For internet-facing authorized targets, `ENGAGE_TOR=on` routes recon and
-audit probes through `127.0.0.1:9050`.
+audit probes through host Tor `127.0.0.1:9050`.
+
+## Subproject wiring (follow-up, after the first E2E)
+
+The first E2E spawned Sliver via `lab-sliver.sh` (compose) and did **not**
+fetch lukechilds payloads. That gap is closed:
+
+- `engage kits` prints present/missing for every subproject
+- phase 20 runs `patch_audit.py` on the **host** (no attacker container)
+- phase 30 uses `third_party/zer061-php2shell/exploit.py` (correct path)
+- phase 40 fetches https://reverse-shell.sh/LHOST:LPORT (RAAS default on)
+- phase 50 starts **host** Sliver binaries when `ENGAGE_C2=sliver`
+- Singularity is detect/playbook only (no `insmod` from engage)
 
 ## Issues found by this test (and fixed)
 

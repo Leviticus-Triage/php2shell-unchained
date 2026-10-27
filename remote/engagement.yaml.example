@@ -1,17 +1,24 @@
 # Remote engagement profile (copy to engagement.yaml, keep local).
-# The authoritative gate is scope-authorized.txt — this file only presets
+# The authoritative gate is scope-authorized.txt — this file only documents
 # options so a repeated engagement does not need long command lines.
+# Env vars still win (the orchestrator reads ENGAGE_* not this YAML).
 
 target:
   url: "https://staging-php.customer-internal.example/index.php"
   notes: "RoE ticket SEC-1234, window 2026-11-02 09:00–12:00"
 
 options:
-  tor: false            # ENGAGE_TOR=on overrides
-  c2: none              # none | sliver
-  lhost: ""             # operator IP reachable from target (phase 40)
+  tor: false              # ENGAGE_TOR=on — Host SOCKS5 :9050
+  c2: none                # none | sliver  (ENGAGE_C2, host binaries via fetch-sliver)
+  rs: on                  # ENGAGE_RS — lukechilds reverse-shell.sh RAAS (default on)
+  tunnel: false           # ENGAGE_TUNNEL=on — cloudflared Quick Tunnel in front of listener
+  jackalsyn: auto         # auto | off — selftest; --lab only with ENGAGE_FCGI_HOST + ENGAGE_DTOR
+  singularity: detect     # detect | off — never insmod from engage
+  zer061: auto            # auto | off — skip if fetch-zer061 404s
+  lhost: ""               # operator IP reachable from target (phase 40)
   lport: 4444
-  terminal: auto        # tmux | gnome | konsole | kitty | xterm | none
+  rs_port: 4445
+  terminal: auto          # tmux | gnome | konsole | kitty | xterm | none
 
 # Phase toggles (all default true; phases are idempotent + resume-safe)
 phases:

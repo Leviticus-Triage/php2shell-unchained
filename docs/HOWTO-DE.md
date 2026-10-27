@@ -183,6 +183,23 @@ Doku: [PATCH-BYPASS-AUDIT.md](PATCH-BYPASS-AUDIT.md). Nur **eigene** URLs / Lab.
 
 ---
 
+## Phase E — Remote Engagement (Produktiv, RoE)
+
+Menü **[e]** — dieselbe Vollkette **ohne** Docker-Target, gegen Hosts in `scope-authorized.txt`.
+
+Wizard fragt: URL, LHOST, Tor, Sliver, RAAS (lukechilds, Default an), Quick Tunnel, Jackalsyn, Singularity-detect.
+
+```bash
+CONFIRM_ROE=I-AM-AUTHORIZED ENGAGE_LHOST=10.20.30.40 \
+  vtbw-php2shell-lab engage run 'https://staging.example/index.php'
+
+vtbw-php2shell-lab engage kits     # welche Unterprojekte wirklich da sind
+```
+
+Verdrahtung: [remote/README.md](../remote/README.md). Singularity wird aus engage **nicht** geladen (`insmod` bleibt VM-Lab, Menü [7]).
+
+---
+
 ## Phase 9 — Docs & Tools
 
 Menü **[9]**: `docs list` / `tools list` / `tools run …`
