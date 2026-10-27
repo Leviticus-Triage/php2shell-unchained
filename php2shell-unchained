@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Repo-root convenience wrapper → opens the ASCII menu
+set -euo pipefail
+ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$ROOT/bin/php2shell-unchained" "$@"
