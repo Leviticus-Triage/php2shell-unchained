@@ -205,10 +205,11 @@ CONFIRM_ROE=I-AM-AUTHORIZED ENGAGE_LHOST=10.20.30.40 \
 | Multi-terminal | Listeners / C2 consoles spawn automatically (tmux panes, gnome-terminal tabs, or nohup) |
 | Tor | `ENGAGE_TOR=on` — Host `tor.service` SOCKS5 `:9050` (no Docker sidecar required) |
 | RAAS | lukechilds `reverse-shell.sh` — Default **on** (`ENGAGE_RS=off` to skip) |
-| C2 | `ENGAGE_C2=sliver` — **host** binaries (`fetch-sliver`), not compose |
-| Tunnel | `ENGAGE_TUNNEL=on` — cloudflared Quick Tunnel in front of the listener |
-| Jackalsyn | selftest in phase 30; `--lab` only with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
-| Singularity | `detect` playbook (default) — **never** `insmod` from engage |
+| C2 | `ENGAGE_C2=sliver` (default) — compose or host auto |
+| Tunnel | `ENGAGE_TUNNEL=on` — listener + optional Sliver HTTPS tunnel |
+| External | `ENGAGE_EXTERNAL=auto` on lab IPs — full `external up` stack |
+| Jackalsyn | selftest in phase 30; `--lab` with `ENGAGE_FCGI_HOST` + `ENGAGE_DTOR` |
+| Singularity | `ENGAGE_SINGULARITY=lab` (default): status, detect, container-up/shell |
 | Gate | `scope-authorized.txt` **plus** `CONFIRM_ROE=I-AM-AUTHORIZED` |
 
 Docs: [remote/README.md](remote/README.md) · profile template: [remote/engagement.yaml.example](remote/engagement.yaml.example)

@@ -73,21 +73,25 @@ cmd_run_wizard() {
   read -r -p "  Listener-IP (LHOST) [${lhost_def}]: " lhost; lhost="${lhost:-$lhost_def}"
   read -r -p "  Listener-Port [4444]: " lport; lport="${lport:-4444}"
   read -r -p "  Tor-Egress (Host :9050) für Recon/Audit? [j/N]: " tor
-  read -r -p "  Sliver C2 (Host-Binaries, fetch bei Bedarf)? [j/N]: " c2
-  read -r -p "  Reverse-Shell-as-a-Service (lukechilds, Default ja)? [J/n]: " rs
-  read -r -p "  Cloudflare Quick Tunnel vor den Listener? [j/N]: " tun
-  read -r -p "  Jackalsyn selftest (Framework fetch bei Bedarf)? [J/n]: " js
-  read -r -p "  Singularity detect-only (kein LKM-Load)? [J/n]: " sg
+  read -r -p "  Sliver C2 (compose/host auto)? [J/n]: " c2
+  read -r -p "  Reverse-Shell-as-a-Service (lukechilds)? [J/n]: " rs
+  read -r -p "  Cloudflare Tunnel (Listener + Sliver HTTPS)? [j/N]: " tun
+  read -r -p "  Lab-External (Tor+Tunnel web/sliver, nur Lab-IP)? [J/n]: " ext
+  read -r -p "  Jackalsyn selftest? [J/n]: " js
+  echo "  Singularity: detect | lab (container) | full (build nur mit CONFIRM)"
+  read -r -p "  Singularity-Modus [lab]: " sg
+  sg="${sg:-lab}"
   echo
   echo "  ── Zusammenfassung ──"
   echo "  Ziel:         $url"
   echo "  LHOST:        $lhost:$lport"
   echo "  Tor:          $([[ "$tor" =~ ^[jJ] ]] && echo on || echo off)"
-  echo "  Sliver C2:    $([[ "$c2" =~ ^[jJ] ]] && echo sliver || echo none)"
+  echo "  Sliver C2:    $([[ "$c2" =~ ^[nN] ]] && echo none || echo sliver)"
   echo "  RAAS:         $([[ "$rs" =~ ^[nN] ]] && echo off || echo on)"
   echo "  Tunnel:       $([[ "$tun" =~ ^[jJ] ]] && echo on || echo off)"
+  echo "  External:     $([[ "$ext" =~ ^[nN] ]] && echo auto || echo on)"
   echo "  Jackalsyn:    $([[ "$js" =~ ^[nN] ]] && echo off || echo auto)"
-  echo "  Singularity:  $([[ "$sg" =~ ^[nN] ]] && echo off || echo detect)"
+  echo "  Singularity:  ${sg:-lab}"
   echo "  Backend:      $(term_backend)"
   echo
   read -r -p "  START mit CONFIRM_ROE=I-AM-AUTHORIZED? Tippe ROE ein: " confirm
@@ -95,13 +99,19 @@ cmd_run_wizard() {
 
   export CONFIRM_ROE=I-AM-AUTHORIZED
   export ENGAGE_LHOST="$lhost" ENGAGE_LPORT="$lport" TARGET_URL="$url"
-  export ENGAGE_C2=none ENGAGE_RS=on ENGAGE_JACKALSYN=auto ENGAGE_SINGULARITY=detect
+  export ENGAGE_C2=sliver ENGAGE_RS=on ENGAGE_JACKALSYN=auto ENGAGE_SINGULARITY="${sg:-lab}"
+  export ENGAGE_FETCH_ALL=on ENGAGE_EXTERNAL=auto
   [[ "$tor" =~ ^[jJ] ]] && export ENGAGE_TOR=on
-  [[ "$c2" =~ ^[jJ] ]] && export ENGAGE_C2=sliver
+  [[ "$c2" =~ ^[nN] ]] && export ENGAGE_C2=none
   [[ "$rs" =~ ^[nN] ]] && export ENGAGE_RS=off
   [[ "$tun" =~ ^[jJ] ]] && export ENGAGE_TUNNEL=on
+  [[ "$ext" =~ ^[nN] ]] && export ENGAGE_EXTERNAL=off
   [[ "$js" =~ ^[nN] ]] && export ENGAGE_JACKALSYN=off
-  [[ "$sg" =~ ^[nN] ]] && export ENGAGE_SINGULARITY=off
+  [[ "$sg" == "off" ]] && export ENGAGE_SINGULARITY=off
+  if [[ "$sg" == "full" ]]; then
+    read -r -p "  Singularity FULL braucht CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK — tippe VM-REBOOT-OK: " sconfirm
+    [[ "$sconfirm" == "VM-REBOOT-OK" ]] && export CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK
+  fi
   bash "$ORCH" run "$url"
   echo
   read -r -p "  ENTER für Menü… " _

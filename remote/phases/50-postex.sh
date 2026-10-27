@@ -1,6 +1,6 @@
 # shellcheck shell=bash
-# Phase 50 — post-ex: host-native Sliver (not compose), Tor proof, Singularity
-# detect-only (never insmod on the operator/target from engage), tunnel follow-up.
+# Phase 50 — post-ex: Sliver (host or compose), Tor proof, Singularity lab chain,
+# optional lab-external (tor+tunnels) for RFC1918 targets.
 phase_postex() {
   state_done 50 && { echo "[50] post-ex ✓ (skip)"; return 0; }
   scope_require_full_chain "$(state_get 00 TARGET_HOST)"
@@ -8,58 +8,34 @@ phase_postex() {
   local sid; sid="$(state_get 40 TERM_SESSION)"
   [[ -z "$sid" ]] && sid="p2s-$ENGAGE_SID"
   local jobs=()
-  local profile="${ENGAGE_C2:-none}"
+  local profile="${ENGAGE_C2:-sliver}"
 
   if [[ "$profile" == "sliver" ]]; then
-    if sliver_ensure_fetched; then
-      local out srv cli
-      out="$(sliver_out)"; mkdir -p "$out"
-      srv="$(sliver_server)"; cli="$(sliver_client)"
-      jobs+=(
-        "sliver-server|mkdir -p '$out' && cd '$out' && echo '[sliver] host daemon' && '$srv'"
-        "sliver-console|sleep 6; echo '[sliver] client — mtls --lhost 0.0.0.0 --lport 8888'; '$cli' || exec bash"
-      )
-      state_set 50 SLIVER "host-spawned"
+    if sliver_engage_jobs jobs "$ENGAGE_DIR"; then
+      state_set 50 SLIVER "$(sliver_engage_use_compose && echo compose || echo host)"
     else
-      echo "[50] Sliver-Binaries fehlen (fetch-sliver fehlgeschlagen) — C2 skip"
       state_set 50 SLIVER "missing"
     fi
   else
-    echo "[50] C2-Profil none (ENGAGE_C2=sliver aktiviert Host-Sliver)"
+    echo "[50] C2 aus (ENGAGE_C2=sliver für BishopFox-Sliver)"
     state_set 50 SLIVER "off"
   fi
 
   if [[ "${ENGAGE_TOR:-}" == "on" ]]; then
-    jobs+=("tor-proof|echo '[tor] Exit-IP Beweis'; curl -fsS --max-time 15 --socks5-hostname 127.0.0.1:9050 https://check.torproject.org/api/ip || echo 'SOCKS down'; echo; echo 'Host IP:'; curl -fsS --max-time 10 https://api.ipify.org || true; exec bash")
+    tor_ensure
+    jobs+=("tor-proof|echo '[tor] Exit-IP'; curl -fsS --max-time 15 --socks5-hostname 127.0.0.1:9050 https://check.torproject.org/api/ip || echo SOCKS?; echo; curl -fsS --max-time 10 https://api.ipify.org || true; bash scripts/lab-tor.sh ip 2>/dev/null || true; exec bash")
+    state_set 50 TOR "proof-spawned"
   fi
 
-  # Singularity: fetch + detect checklist + operator playbook. NEVER insmod here.
-  local sing="${ENGAGE_SINGULARITY:-detect}"
-  if [[ "$sing" != "off" ]]; then
-    local play="$ENGAGE_DIR/payloads/singularity-postex.md"
-    mkdir -p "$ENGAGE_DIR/payloads"
-    cat > "$play" <<'PLAY'
-# Singularity (post-exploit) — nur nach Foothold, nur auf autorisiertem Ziel
+  singularity_engage_jobs jobs "$ENGAGE_DIR"
+  state_set 50 SINGULARITY "${ENGAGE_SINGULARITY:-lab}"
 
-Engage lädt **kein** LKM. Nach Root-Shell auf dem *Ziel*:
-
-1. Bundle liegt in `third_party/singularity/` (fetch-singularity).
-2. Runtime wählen: `vtbw-php2shell-lab singularity runtime` → **vm** (empfohlen).
-3. Nicht auf dem Operator-Host und nicht auf fremder Prod ohne extra RoE.
-4. Blue-Team Gegenprobe: `vtbw-php2shell-lab singularity detect`
-
-Entfernen: Reboot (kein unload).
-PLAY
-    jobs+=("singularity-detect|echo '[singularity] detect-only (kein insmod)'; bash scripts/lab-singularity.sh detect; echo; echo 'Playbook: $play'; exec bash")
-    state_set 50 SINGULARITY "detect"
-  else
-    state_set 50 SINGULARITY "off"
-  fi
+  external_engage_jobs jobs
 
   if [[ ${#jobs[@]} -gt 0 ]]; then
     term_spawn_jobs "$sid" "$ENGAGE_DIR/logs" "${jobs[@]}"
   fi
   state_set 50 C2_PROFILE "$profile"
   state_mark 50
-  echo "[50] post-ex ✓ C2=$profile · Jobs=${#jobs[@]} · Singularity=$sing"
+  echo "[50] post-ex ✓ C2=$profile · Jobs=${#jobs[@]} · Singularity=${ENGAGE_SINGULARITY:-lab}"
 }

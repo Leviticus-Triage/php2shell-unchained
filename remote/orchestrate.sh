@@ -11,9 +11,11 @@ source "$ROOT/remote/lib/scope.sh"
 source "$ROOT/remote/lib/term.sh"
 source "$ROOT/remote/lib/state.sh"
 source "$ROOT/remote/lib/curl.sh"
+source "$ROOT/remote/lib/kits.sh"
+source "$ROOT/remote/lib/lab-bridge.sh"
 source "$ROOT/remote/lib/rshell.sh"
 source "$ROOT/remote/lib/sliver-host.sh"
-source "$ROOT/remote/lib/kits.sh"
+source "$ROOT/remote/lib/singularity-engage.sh"
 source "$ROOT/remote/phases/00-scope.sh"
 source "$ROOT/remote/phases/10-recon.sh"
 source "$ROOT/remote/phases/20-fingerprint.sh"
@@ -38,15 +40,17 @@ Pflicht (jedes Mal):
 
 Optionen (Env):
   ENGAGE_SID=…            Session-Id (Default: UTC-Timestamp)
-  ENGAGE_TOR=on           Recon/Probes/Audit über Host-Tor (127.0.0.1:9050)
-  ENGAGE_C2=sliver        Host-Sliver (fetch-sliver, kein Compose)
+  ENGAGE_TOR=on           Recon/Audit über Host-Tor (:9050)
+  ENGAGE_C2=sliver        Default: Sliver (compose wenn :31337 belegt, sonst Host)
+  ENGAGE_SLIVER_MODE=auto|host|compose
   ENGAGE_RS=on|off        lukechilds RAAS (Default: on)
-  ENGAGE_RS_PORT=4445
-  ENGAGE_TUNNEL=on        Cloudflare Quick Tunnel vor den Listener
-  ENGAGE_JACKALSYN=auto|off   Framework-selftest; --lab nur mit ENGAGE_FCGI_HOST
-  ENGAGE_FCGI_HOST=…      optional FCGI für Jackalsyn --lab
-  ENGAGE_DTOR=0x…         zval_ptr_dtor für Jackalsyn --lab
-  ENGAGE_SINGULARITY=detect|off   Bundle + detect (kein insmod)
+  ENGAGE_TUNNEL=on        Listener- und/oder Sliver-C2 Quick Tunnel
+  ENGAGE_EXTERNAL=auto|on|off   Lab-Ziel: tor+tunnel web/sliver (compose)
+  ENGAGE_JACKALSYN=auto|off
+  ENGAGE_FCGI_HOST / ENGAGE_DTOR   Jackalsyn --lab
+  ENGAGE_SINGULARITY=lab|detect|full|off   status+detect+container (full+CONFIRM → build)
+  CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK   nur mit ENGAGE_SINGULARITY=full
+  ENGAGE_FETCH_ALL=on     alle fetch-* beim Start
   ENGAGE_ZER061=auto|off
   ENGAGE_LHOST=…          Operator-IP für Rückkanal (Pflicht ab Phase 40)
   ENGAGE_LPORT=4444
@@ -66,7 +70,10 @@ cmd_run() {
   export TARGET_URL="$url"
   export ENGAGE_SID="${ENGAGE_SID:-$(date -u +%Y%m%d-%H%M%S)}"
   export ENGAGE_RS="${ENGAGE_RS:-on}"
-  export ENGAGE_SINGULARITY="${ENGAGE_SINGULARITY:-detect}"
+  export ENGAGE_C2="${ENGAGE_C2:-sliver}"
+  export ENGAGE_SINGULARITY="${ENGAGE_SINGULARITY:-lab}"
+  export ENGAGE_FETCH_ALL="${ENGAGE_FETCH_ALL:-on}"
+  export ENGAGE_EXTERNAL="${ENGAGE_EXTERNAL:-auto}"
   state_init "$ENGAGE_SID"
   echo "════════════════════════════════════════════════"
   echo " engage · Session $ENGAGE_SID · Ziel $TARGET_URL"
