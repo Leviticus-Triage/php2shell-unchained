@@ -11,7 +11,7 @@ The compose lab proves concepts. Operators also need to know whether a **real** 
 | Write JSONL evidence + markdown report | Obfuscate origin by default (Tor stays an explicit lab option, not the assessment default) |
 | Refuse to run without a scope file | Run against arbitrary IPs |
 
-This is deliberate. The delta between "validation tool" and "attack framework" is not the probe — it is chaining, payload delivery, and origin hiding. Those stay in the isolated lab.
+This is deliberate. The delta between "validation tool" and "attack framework" is not the probe — it is chaining, payload delivery, and origin hiding. For engagements where the RoE **does** cover the full chain against your production systems, use the additionally gated mode: [remote/README.md](../remote/README.md) (`engage` — same scope file **plus** `CONFIRM_ROE=I-AM-AUTHORIZED`, incremental phases, auto-spawned listener/C2 terminals).
 
 ## 1. Declare scope (required)
 

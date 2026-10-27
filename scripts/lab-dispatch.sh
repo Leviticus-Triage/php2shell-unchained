@@ -30,6 +30,8 @@ lab_dispatch() {
       exec "$LAB/scripts/lab-patch-audit.sh" "${1:-help}" "${@:2}" ;;
     assess)
       exec "$LAB/scripts/lab-assess.sh" "${1:-help}" "${@:2}" ;;
+    engage|remote)
+      exec "$LAB/remote/orchestrate.sh" "${1:-help}" "${@:2}" ;;
     session|tmux)
       exec "$LAB/scripts/lab-session.sh" "${1:-lab}" "${@:2}" ;;
     workarounds|wa|workaround-guide)

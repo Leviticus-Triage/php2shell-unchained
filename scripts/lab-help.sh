@@ -54,6 +54,12 @@ Authorized assessment (eigene echte Hosts, RoE-Gate)
   assess run <id>|all | assess report | assess scope
   Gate: scope-authorized.txt (gitignored) — docs/AUTHORIZED-ASSESSMENT.md
 
+Remote engagement (Vollkette gegen autorisierte Produktivsysteme)
+  engage run <url> | resume | status | listeners
+  recon→fingerprint→exploit→foothold→post-ex→report, inkrementell/resume
+  Terminal-Spawns: Listener/C2/Console je eigenes Fenster (tmux/gnome/none)
+  Pflicht: scope-authorized.txt + CONFIRM_ROE=I-AM-AUTHORIZED — remote/README.md
+
 Multi-Terminal (nur isoliertes Lab)
   session lab | session audit | session down   tmux-Panes für Stack/Logs/Audit
   PATCH_AUDIT_URL=… PATCH_AUDIT_DESTRUCTIVE=1 …

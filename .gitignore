@@ -18,3 +18,5 @@ third_party/*.tar.gz
 
 # Authorized assessment scope (operator-local, RoE evidence)
 scope-authorized.txt
+engagement.yaml
+out/engage/

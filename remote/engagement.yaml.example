@@ -1,0 +1,23 @@
+# Remote engagement profile (copy to engagement.yaml, keep local).
+# The authoritative gate is scope-authorized.txt — this file only presets
+# options so a repeated engagement does not need long command lines.
+
+target:
+  url: "https://staging-php.customer-internal.example/index.php"
+  notes: "RoE ticket SEC-1234, window 2026-11-02 09:00–12:00"
+
+options:
+  tor: false            # ENGAGE_TOR=on overrides
+  c2: none              # none | sliver
+  lhost: ""             # operator IP reachable from target (phase 40)
+  lport: 4444
+  terminal: auto        # tmux | gnome | konsole | kitty | xterm | none
+
+# Phase toggles (all default true; phases are idempotent + resume-safe)
+phases:
+  recon: true
+  fingerprint: true
+  exploit: true
+  foothold: true
+  postex: true
+  report: true

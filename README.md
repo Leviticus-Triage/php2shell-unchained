@@ -185,7 +185,29 @@ vtbw-php2shell-lab assess run all
 vtbw-php2shell-lab assess report
 ```
 
-**Design boundary (deliberate):** probes + evidence only. No exploit chaining, implants, C2, or origin obfuscation against real hosts — those stay in the isolated lab. Details: [docs/AUTHORIZED-ASSESSMENT.md](docs/AUTHORIZED-ASSESSMENT.md).
+**Design boundary (deliberate):** `assess` = probes + evidence only. The full chain against authorized production hosts is a separate, additionally gated mode:
+
+### 5b. Remote engagement (full chain, authorized hosts — no Docker target)
+
+For red teamers and sysadmins who need the **complete** path — exploitation, chaining, post-exploitation — against their own real systems:
+
+```bash
+echo 'staging-php.internal.example  # RoE SEC-1234' >> scope-authorized.txt
+CONFIRM_ROE=I-AM-AUTHORIZED ENGAGE_LHOST=10.20.30.40 \
+  vtbw-php2shell-lab engage run 'https://staging-php.internal.example/index.php'
+```
+
+| Property | Behaviour |
+|----------|-----------|
+| Phases | 00 scope → 10 recon → 20 fingerprint → 30 exploit → 40 foothold → 50 post-ex → 60 report |
+| Incremental | Each phase idempotent; `engage resume <sid>` continues |
+| Chained | Later phases hydrate earlier results (banner → exploit choice, listener → post-ex) |
+| Multi-terminal | Listeners / C2 consoles spawn automatically (tmux panes, gnome-terminal tabs, or nohup) |
+| Tor | `ENGAGE_TOR=on` (explicit opt-in, never default) |
+| C2 | `ENGAGE_C2=sliver` profile |
+| Gate | `scope-authorized.txt` **plus** `CONFIRM_ROE=I-AM-AUTHORIZED` |
+
+Docs: [remote/README.md](remote/README.md) · profile template: [remote/engagement.yaml.example](remote/engagement.yaml.example)
 
 ### 6. Multi-terminal convenience
 
