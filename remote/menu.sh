@@ -182,6 +182,90 @@ cmd_rshell_variants() {
   read -r -p "  ENTER für Menü… " _
 }
 
+cmd_sliver_ops() {
+  hdr
+  cat <<'SUB'
+  ── Sliver (host binaries via fetch-sliver; compose läuft ggf. parallel) ──
+    [1] fetch (fehlt)
+    [2] Status
+    [3] server-up (Compose)
+    [4] Operator (einmalig, Compose)
+    [5] mTLS Listener :8888
+    [6] HTTPS Listener :8889 (für tunnel sliver-http)
+    [7] Implant erzeugen (mTLS)
+    [8] Implant staging (HTTP-Server out/sliver)
+    [9] Konsole (interaktiv — Terminal!)
+    [d] down
+    [0] Zurück
+SUB
+  read -r -p "  Auswahl: " c
+  case "$c" in
+    1) bash "$ROOT/scripts/fetch-sliver.sh" ;;
+    2) bash "$ROOT/scripts/lab-sliver.sh" status ;;
+    3) bash "$ROOT/scripts/lab-sliver.sh" server-up ;;
+    4) bash "$ROOT/scripts/lab-sliver.sh" operator ;;
+    5) bash "$ROOT/scripts/lab-sliver.sh" listener ;;
+    6) bash "$ROOT/scripts/lab-sliver.sh" http-listener ;;
+    7) bash "$ROOT/scripts/lab-sliver.sh" implant ;;
+    8) bash "$ROOT/scripts/lab-sliver.sh" stage ;;
+    9) echo "  Hinweis: belegt dieses Terminal — Ctrl+D / exit für Rückkehr"; bash "$ROOT/scripts/lab-sliver.sh" console ;;
+    d|D) bash "$ROOT/scripts/lab-sliver.sh" down ;;
+  esac
+  read -r -p "  ENTER für Menü… " _
+}
+
+cmd_singularity_ops() {
+  hdr
+  cat <<'SUB'
+  ── Singularity (LKM — nur Lab/VM/autorisiert; kein Load auf Prod!) ──
+    [1] fetch (Bundle)
+    [2] Status
+    [3] detect (Blue Team, read-only)
+    [4] Runtime wählen (vm/host/container)
+    [5] container-up (privileged)
+    [6] container-build (CONFIRM_SINGULARITY_CONTAINER=…)
+    [7] container-shell (interaktiv)
+    [8] host-check / host-build (Gefahr Host!)
+    [9] vm-wizard / vm-up
+    [0] Zurück
+SUB
+  read -r -p "  Auswahl: " c
+  case "$c" in
+    1) bash "$ROOT/scripts/fetch-singularity.sh" ;;
+    2) bash "$ROOT/scripts/lab-singularity.sh" status ;;
+    3) bash "$ROOT/scripts/lab-singularity.sh" detect ;;
+    4) bash "$ROOT/scripts/lab-singularity.sh" runtime ;;
+    5) bash "$ROOT/scripts/lab-singularity.sh" container-up ;;
+    6) bash "$ROOT/scripts/lab-singularity.sh" container-build ;;
+    7) bash "$ROOT/scripts/lab-singularity.sh" container-shell ;;
+    8) bash "$ROOT/scripts/lab-singularity.sh" host-check; bash "$ROOT/scripts/lab-singularity.sh" host-build ;;
+    9) bash "$ROOT/scripts/lab-singularity.sh" vm-wizard; bash "$ROOT/scripts/lab-singularity.sh" vm-up ;;
+  esac
+  read -r -p "  ENTER für Menü… " _
+}
+
+cmd_external_ops() {
+  hdr
+  cat <<'SUB'
+  ── Lab-External (Compose: Tor + Quick Tunnels — Ziel muss Lab-Netz sein) ──
+    [1] up (direkt)
+    [2] up --tor (Exit-Verschleierung)
+    [3] status
+    [4] URLs aus state.env
+    [5] down
+    [0] Zurück
+SUB
+  read -r -p "  Auswahl: " c
+  case "$c" in
+    1) bash "$ROOT/scripts/lab-external.sh" up ;;
+    2) bash "$ROOT/scripts/lab-external.sh" up --tor ;;
+    3) bash "$ROOT/scripts/lab-external.sh" status ;;
+    4) [[ -f "$ROOT/out/external/state.env" ]] && cat "$ROOT/out/external/state.env" || echo "kein state" ;;
+    5) bash "$ROOT/scripts/lab-external.sh" down ;;
+  esac
+  read -r -p "  ENTER für Menü… " _
+}
+
 main_loop() {
   while true; do
     hdr
@@ -194,6 +278,9 @@ main_loop() {
     [6] Report ansehen           REPORT.md der Session
     [7] Reverse-Shell RAAS       lukechilds-Payload ziehen + Listener
     [8] Unterprojekte            Kits: vorhanden / fehlend (Sliver, Tor, RAAS, …)
+    [9] Sliver (Post-Ex)         status · operator · listener · https · console · stage · down
+    [a] Singularity              status · detect · runtime · container · build · host · vm
+    [b] Lab-External             up [--tor] · status · down · URLs (nur Lab-Target)
     [0] Zurück
 
 MENU
@@ -207,6 +294,9 @@ MENU
       6) cmd_report ;;
       7) cmd_rshell_variants ;;
       8) cmd_kits ;;
+      9) cmd_sliver_ops ;;
+      a|A) cmd_singularity_ops ;;
+      b|B) cmd_external_ops ;;
       0|q|"") return 0 ;;
     esac
   done

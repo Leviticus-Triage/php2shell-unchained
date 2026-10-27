@@ -56,6 +56,7 @@ Authorized assessment (eigene echte Hosts, RoE-Gate)
 
 Remote engagement (Vollkette gegen autorisierte Produktivsysteme)
   engage run <url> | resume | status | listeners | kits
+  Menü [e]: Wizard + [9] Sliver [a] Singularity [b] Lab-External
   recon→fingerprint→exploit→foothold→post-ex→report, inkrementell/resume
   Kits in der Kette: FPM-PoC, patch_audit (host), Zer061, Jackalsyn,
     lukechilds RAAS (Default on), Sliver-host, Tor :9050, Quick Tunnel,

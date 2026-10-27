@@ -46,9 +46,10 @@ Override: `ENGAGE_TERMINAL=tmux|gnome|none`.
 
 ## Menu (shell UI)
 
-Main menu key **[e]** opens the engagement console — scope management, run
-wizard, resume, status, listener respawn, report viewer, reverse-shell
-RAAS, kit inventory. Same actions as the CLI, guided.
+Main menu key **[e]** opens the engagement console — scope, wizard, resume,
+status, listeners, report, RAAS, kits, plus **[9] Sliver**, **[a] Singularity**,
+**[b] Lab-External** operations. Everything the orchestrator runs is also
+one keypress away here.
 
 ![menu](../docs/assets/remote-menu.png)
 

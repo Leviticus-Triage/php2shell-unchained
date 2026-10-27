@@ -93,6 +93,9 @@ main_loop() {
     [9] Kit Docs & Tools   docs · tools
     [a] Assess (eigene echte Hosts)  scope-authorized.txt + assess run
     [e] REMOTE ENGAGEMENT  Produktiv (RoE): Wizard · Vollkette · Auto-Terminals
+                           ├─ Kits/RAAS/Tor/Sliver/Singularity/External
+                           ├─ [9] Sliver · [a] Singularity · [b] Lab-External
+                           └─ Defaults: C2=sliver · Singularity=lab · RS=on
     [s] Session (tmux)     lab-Panes: stack · logs · audit
     [d] Docker             ps · logs · down · export
     [h] Hilfe (alle CLI-Befehle)
