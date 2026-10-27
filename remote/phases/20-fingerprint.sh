@@ -5,7 +5,7 @@ phase_fingerprint() {
   local log="$ENGAGE_DIR/logs/20-fingerprint.log"
   local audit="$LAB_ROOT/attacker/scripts/patch_audit.py"
   local proxy=""
-  if [[ "${ENGAGE_TOR:-}" == "on" ]]; then
+  if [[ "${ENGAGE_TOR:-}" == "on" ]] && ! engage_target_is_lab; then
     proxy="socks5h://127.0.0.1:9050"
   fi
   {

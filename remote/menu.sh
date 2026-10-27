@@ -90,8 +90,11 @@ LAB
   engage_export_lab_full_load "$lport"
   export TARGET_URL="$url"
   echo
-  echo "  Starte Vollkette → $url (LHOST=$ENGAGE_LHOST:$ENGAGE_LPORT, Singularity=load)"
-  bash "$ORCH" run "$url"
+  echo "  Starte Vollkette → $url (LHOST=$ENGAGE_LHOST:$ENGAGE_LPORT, Singularity=load, Tor=on)"
+  if ! bash "$ORCH" run "$url"; then
+    echo
+    echo "  Engage abgebrochen (Exit $?). Ausgabe oben steht lassen — nicht ins Hauptmenü springen."
+  fi
   echo
   read -r -p "  ENTER für Menü… " _
 }
@@ -156,7 +159,10 @@ cmd_run_wizard() {
     read -r -p "  Singularity LOAD braucht CONFIRM — tippe VM-REBOOT-OK: " sconfirm
     [[ "$sconfirm" == "VM-REBOOT-OK" ]] && export CONFIRM_SINGULARITY_ENGAGE=VM-REBOOT-OK
   fi
-  bash "$ORCH" run "$url"
+  if ! bash "$ORCH" run "$url"; then
+    echo
+    echo "  Engage abgebrochen (Exit $?). Log: out/engage/<session>/logs/"
+  fi
   echo
   read -r -p "  ENTER für Menü… " _
 }
@@ -183,7 +189,7 @@ cmd_next_steps() {
   read -r -p "  ENTER für Menü… " _
 }
 
-cmd_status() { hdr; bash "$ORCH" status; echo; read -r -p "  ENTER für Menü… " _; }
+cmd_status() { hdr; bash "$ORCH" status || true; echo; read -r -p "  ENTER für Menü… " _; }
 
 cmd_listeners() {
   hdr; local sid
@@ -202,7 +208,7 @@ cmd_report() {
 
 cmd_kits() {
   hdr
-  bash "$ORCH" kits
+  bash "$ORCH" kits || true
   echo
   read -r -p "  ENTER für Menü… " _
 }
