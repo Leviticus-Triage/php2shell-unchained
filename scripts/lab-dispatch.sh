@@ -28,6 +28,10 @@ lab_dispatch() {
     singularity) exec "$LAB/scripts/lab-singularity.sh" "${1:-status}" ;;
     patch-audit|mitigation-audit|audit-patch)
       exec "$LAB/scripts/lab-patch-audit.sh" "${1:-help}" "${@:2}" ;;
+    assess)
+      exec "$LAB/scripts/lab-assess.sh" "${1:-help}" "${@:2}" ;;
+    session|tmux)
+      exec "$LAB/scripts/lab-session.sh" "${1:-lab}" "${@:2}" ;;
     workarounds|wa|workaround-guide)
       exec "$LAB/scripts/lab-workarounds.sh" "${1:-guide}" "${@:2}" ;;
     zer061)   exec "$LAB/scripts/lab-zer061.sh" ;;

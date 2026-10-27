@@ -49,6 +49,13 @@ Cloudflare Quick Tunnel (externe Angreifer-Perspektive, kein Account)
 Workarounds + Patch-Audit (Sec-Teams, nur eigene Ziele)
   workarounds | workarounds run|auto|last|logs   Geführt, Log: out/workarounds/
   patch-audit list | patch-audit run <id>|all | patch-audit logs
+
+Authorized assessment (eigene echte Hosts, RoE-Gate)
+  assess run <id>|all | assess report | assess scope
+  Gate: scope-authorized.txt (gitignored) — docs/AUTHORIZED-ASSESSMENT.md
+
+Multi-Terminal (nur isoliertes Lab)
+  session lab | session audit | session down   tmux-Panes für Stack/Logs/Audit
   PATCH_AUDIT_URL=… PATCH_AUDIT_DESTRUCTIVE=1 …
 
 Singularity (Post-Exploit LKM — VM/Host/Container, nicht in PHP-Targets)

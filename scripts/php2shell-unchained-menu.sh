@@ -91,6 +91,8 @@ main_loop() {
     [7] Singularity        Post-Exploit LKM (VM / Host / Container)
     [8] Workarounds+Audit  SCHRITT-FÜR-SCHRITT · Patch/WAF prüfen · Log+Auswertung
     [9] Kit Docs & Tools   docs · tools
+    [a] Assess (eigene echte Hosts)  scope-authorized.txt + assess run
+    [s] Session (tmux)     lab-Panes: stack · logs · audit
     [d] Docker             ps · logs · down · export
     [h] Hilfe (alle CLI-Befehle)
 
@@ -216,6 +218,20 @@ MENU
           "Docs list" "docs|list" \
           "Tools list" "tools|list" \
           "Tool run (interaktiv)" tools
+        ;;
+      a|A)
+        dispatch_sub "Assess — eigene echte Hosts (RoE-Gate)" \
+          "Scope anzeigen" "assess|scope" \
+          "Alle Checks" "assess|run|all" \
+          "Vendor-Patch" "assess|run|vendor-patch" \
+          "WAF-Signaturen" "assess|run|waf-php2shell-signature" \
+          "Report" "assess|report"
+        ;;
+      s|S)
+        dispatch_sub "Session — tmux-Panes (nur Lab)" \
+          "Lab-Panes (stack/logs/audit/doctor)" "session|lab" \
+          "Audit-Panes (workarounds/logs/shell)" "session|audit" \
+          "Session schließen" "session|down"
         ;;
       *) ;;
     esac

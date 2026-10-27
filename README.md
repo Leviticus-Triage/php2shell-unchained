@@ -171,7 +171,32 @@ vtbw-php2shell-lab tunnel url
 vtbw-php2shell-lab external patch-audit waf-bypass-top10
 ```
 
-### 5. Cursor / MCP
+### 5. Authorized assessment (your own real hosts)
+
+Sysadmins and red teamers can validate **real** PHP deployments they are authorized to test — the same 11 patch/WAF probes, scope-gated:
+
+```bash
+# 1. Declare authorization (gitignored, machine-checked gate)
+echo 'staging-php.internal.example  # RoE SEC-1234, 2026-10-27' >> scope-authorized.txt
+
+# 2. Target + run
+export PATCH_AUDIT_URL='https://staging-php.internal.example/index.php'
+vtbw-php2shell-lab assess run all
+vtbw-php2shell-lab assess report
+```
+
+**Design boundary (deliberate):** probes + evidence only. No exploit chaining, implants, C2, or origin obfuscation against real hosts — those stay in the isolated lab. Details: [docs/AUTHORIZED-ASSESSMENT.md](docs/AUTHORIZED-ASSESSMENT.md).
+
+### 6. Multi-terminal convenience
+
+For the isolated lab workflow, tmux panes spawn automatically:
+
+```bash
+vtbw-php2shell-lab session lab     # 4 panes: stack up | logs | audit list | doctor
+vtbw-php2shell-lab session audit   # 3 panes: guided workarounds | logs | shell
+```
+
+### 7. Cursor / MCP
 
 Configure the MCP server in [docs/CURSOR-INTEGRATION.md](docs/CURSOR-INTEGRATION.md). Tools: `lab_help`, `lab_status`, `lab_run`, `lab_read_doc`, `lab_exploit_map`.
 
@@ -207,6 +232,7 @@ Reference: [docs/PATCH-BYPASS-AUDIT.md](docs/PATCH-BYPASS-AUDIT.md).
 | Document | Language | Content |
 |----------|----------|---------|
 | [docs/HOW-TO.md](docs/HOW-TO.md) | EN | First hour: install, doctor, workarounds, stop |
+| [docs/AUTHORIZED-ASSESSMENT.md](docs/AUTHORIZED-ASSESSMENT.md) | EN | Scope-gated validation of your own real hosts |
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | DE | Complete technical manual (commands, compose, env, logs) |
 | [docs/HOWTO-DE.md](docs/HOWTO-DE.md) | DE | Phased workflow 1–10 |
 | [docs/WORKFLOW-KOMPLETT.md](docs/WORKFLOW-KOMPLETT.md) | DE | **Full workflow:** setup → exploit → post-exploit → audit |
