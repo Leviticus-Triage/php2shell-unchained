@@ -9,7 +9,12 @@ curl_proxy_args() {
     return 0
   fi
   if command -v docker >/dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -qx vtbw-php2shell-tor; then
-    printf '%s\n' --socks5-hostname 127.0.0.1:9050
+    if [[ -x "${LAB_ROOT:-}/scripts/lab-tor.sh" ]]; then
+      bash "${LAB_ROOT}/scripts/lab-tor.sh" up >/dev/null 2>&1 || true
+    fi
+    if ss -tln 2>/dev/null | grep -q ':9050 '; then
+      printf '%s\n' --socks5-hostname 127.0.0.1:9050
+    fi
   fi
 }
 

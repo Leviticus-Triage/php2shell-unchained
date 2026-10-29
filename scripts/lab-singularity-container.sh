@@ -56,7 +56,9 @@ EOF
     echo "Container läuft nicht — singularity container-up" >&2
     exit 1
   fi
-  docker exec -it "$CONTAINER" bash -lc '
+  local exec_flags=(-i)
+  [[ -t 0 ]] && exec_flags=(-it)
+  docker exec "${exec_flags[@]}" "$CONTAINER" bash -lc '
     set -e
     cd /opt/singularity
     if [[ -x setup.sh ]]; then
@@ -75,7 +77,11 @@ cmd_container_shell() {
     echo "singularity container-up zuerst" >&2
     exit 1
   fi
-  docker exec -it "$CONTAINER" bash
+  if [[ -t 0 ]]; then
+    docker exec -it "$CONTAINER" bash
+  else
+    docker exec -i "$CONTAINER" bash -lc 'echo "[singularity] non-interactive shell — use: vtbw-php2shell-lab singularity container-shell"; exec bash -i' || true
+  fi
 }
 
 case "$ACTION" in

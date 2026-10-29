@@ -19,6 +19,22 @@ engage_apply_lab_defaults() {
   if [[ "${ENGAGE_EXTERNAL:-auto}" == "auto" ]]; then
     export ENGAGE_EXTERNAL=on
   fi
+  local preset="$LAB_ROOT/remote/lib/engage-lab-preset.sh"
+  if [[ -f "$preset" ]]; then
+    # shellcheck source=remote/lib/engage-lab-preset.sh
+    source "$preset"
+    local resolved cur_host res_host
+    resolved="$(engage_lab_default_url)"
+    cur_host="$(engage_url_host "$TARGET_URL")"
+    res_host="$(engage_url_host "$resolved")"
+    if [[ -n "$res_host" && "$cur_host" != "$res_host" ]]; then
+      echo "[lab] Ziel-URL angepasst: $TARGET_URL → $resolved"
+      export TARGET_URL="$resolved"
+    fi
+    if [[ -z "${ENGAGE_LHOST:-}" ]]; then
+      export ENGAGE_LHOST="$(engage_lab_lhost)"
+    fi
+  fi
 }
 
 # Synchronous external stack (tunnels) — logs to engage session; does not abort engage on failure.
